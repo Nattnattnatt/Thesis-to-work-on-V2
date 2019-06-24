@@ -1,0 +1,125 @@
+\section{Algorithm to apply the edge criterion}
+Given some hyperedge set $\mathcal{E}$, and tuples contained in each hyperedges $J_3,J_4,...$. Each set of tuples $J_i$ has some tuples $T_3, ..., T_{|J_i|}$ that we need to know in order to check the edge criterion. For example, $T_3=\{u,v,w\}$. We give an algorithm that takes as inputs the tuples and outputs an optimal clustering of the hypergraph $G=(V, \mathcal{E})$. 
+Let $|J_i| \leq n$ for all $i \leq m$. That is: There are up to $m-$ tuples (1-tuples, 2-tuples, ..., $m$-tuples), and each set of tuples $J_i$ contains at most $n$ elements $T_3, ..., T_n$. 
+We describe the elements in set of $k-$tuples $T_k$ as $T_{k,x}, T_{k,y}, ...$. 
+The underlying idea is that we want to find all possible combinations \[ (T_{3,x}, T_{4,x}, ...) \in J_3 \cdot J_4 \cdot ... \cdot J_n \] and want to check our criteria on these different sets. We also use $X_T=\prod_{i \in T} x_i$.
+
+\begin{algorithm}[h]
+\SetAlgoLined
+\KwResult{Obtain an optimal clustering for hypergraph G.}
+Let $T=(T_{3,x}, T_{4,x}, ..., T_{m,x})$ \\
+\For{$i \in [3,n]$}{\For{$T_{i,x} \in J_i$}{Fix $T_{i,x}$ as the $i$-th component of $T$ \\ \If{ $T$ satisfies (1)}{Apply Theorem 1. Then $X^*_T=0$. \\}{\If{$T$ satisfies (2)}{Apply Theorem 1. Then $X^*_T=1$.}}}}
+\caption{Find an optimal clustering using the edge criterion}
+\end{algorithm}
+
+
+
+
+\section{3-node application}
+Let $G=(V,E)$ and $c: V^3 \to \mathbf{R}$, then the 3-order multi-cut problem is defined as follows 
+\begin{equation}
+    \min \sum_{(u,v,w) \in \binom{V}{3}} x_{uv}x_{uw}x_{vw}c_{uv,uw} \quad \text{ such that } x \in X, 
+\end{equation}
+where 
+\begin{equation}
+    X=\Bigg\{ x \in \{0,1\}^E \mid
+   \forall C \in \text{cycles}(G) \quad \forall e \in C: 1-x_e \leq \sum_{f \in C \setminus \{e \}} (1-x_f) \Bigg\}
+\end{equation}
+
+Note that for the edge labeling $x$, $1$ means join and $0$ means cut. If $x_{uv}=1$ and $x_{uw}=1$, then also $x_{vw}=1$, by definition of a multi-cut. This means that if a persistency criteria fixes two values to join, then the corresponding third edge must be necessarily also fixed to $1$. 
+\begin{lemma}
+Let $p: X \to X$ be a strictly improving mapping. Suppose that $\exists i \in E$ and $ \exists \beta \in \{0,1\}$ such that \[ p(x)_i = \beta \quad \forall x \in X. \] Then $x^*_i=\beta$ in every optimal solution $x^*$ of the multi-cut problem. 
+\end{lemma}
+\textit{Proof:} Since $p$ is strictly improving, $p(X)$ is the new search space. Thus it must be that every optimal solution $x^*$ is such that $x^* \in p(X)$. It follows that $x^*_i =p(x)_i=\beta$.  
+\begin{theorem}
+Let $u,v,w$ be vertices of $V$: $(u,v,w) \in V^3$. 
+Let $\beta=(1-\text{sign}(c_{uv,uw}))/2$, that is 
+\begin{equation*} \beta= \begin{cases}
+0 & \text{if } c_{uv,uw} >0 \\
+1 & \text{else}
+\end{cases} \end{equation*}
+If \begin{equation}
+ \sum_{k,l,m \in V \setminus \{ u,v,w\} } |c_{kl,lm}|  < |c_{uv,uw}|, 
+\end{equation}
+ then $x^*_{uv} \cdot x^*_{uw}=\beta$ in every optimal solution $x^*$ of the multi-cut problem. 
+\end{theorem}
+Note that the equivalent condition to (3) is: 
+\begin{equation}
+    \mu |c_{uv,uw}| \geq \rho \sum_{k,l,m \in V \setminus \{u,v,w\}} |c_{kl,lm}| 
+\end{equation}
+for some $\mu <1$ and some $\rho >1$. 
+Observe that the case $\beta=1$ finds specific applications, as also explained above: If $uv$ and $uw$ are connected, that is $x_{uv}=x_{uw}=1$, then also $x_{vw}=1$ by the definition of a multi-cut: A triangle can not be cut once, this is a contradiction. Something similar is not true for $\beta=0$. 
+
+\CD{}{NOTE: I am wondering about the fact "in some optimal solution". I mean what can we infer from the theorem?} \EN{}{We know that in some optimal solution $x^*$, the edge labelings for $uv$ and $uw$ are fixed.}
+
+\CD{}{You may use an environment for the proof similar to the theorem environment.} ? 
+\textit{Proof:} 1. Fix $\beta=1$. We show that the mapping \[ p(x) = \begin{cases} 
+p_{uv}(p_{uw}(x)) & x_{uv}=0 \lor x_{uw}=0 \\
+x & \text{ else }
+\end{cases} \] is strictly improving for the multi-cut. Let $x \in X$, $z=p(x)$ and suppose $x_{uv}x_{uw} \neq \beta$. That is: $x_{uw}=0$  or $x_{uv}=0$ or $x_{uv}=x_{uw}=0$ for $c_{uv,uw} \leq 0$. 
+Then \begin{equation}
+\begin{split}
+    &\sum_{k,l,m \in V} c_{kl,lm} (z_{kl} z_{lm} - x_{kl} x_{lm} ) \\
+    & = c_{uv,uw}(z_{uv}z_{uw}-x_{uv}x_{uw}) + \sum_{k,l,m \in V \setminus \{u,v,w\}} c_{kl,lm} (z_{kl} z_{lm} - x_{kl} x_{lm} ) \\
+    & \leq - |c_{uv,uw}| + \sum_{k,l,m \in V \setminus \{u,v,w\} }  |c_{kl,lm}| \\
+    & < - \mu |c_{uv,uw}| + \rho \sum_{k,l,m \in V \setminus \{u,v,w\} }  |c_{kl,lm}| 
+\end{split}
+\end{equation}
+for some $\mu <1$ and some $\rho >1$. 
+Thus, the mapping $p(x)$ is strictly improving with some given conditions. Hence we apply persistency Lemma 1.1 above to refer that then $x^*_{uv} \cdot x^*_{uw}=1$. It follows $x^*_{uv}=x^*_{uw}=1$.
+
+2. Fix $\beta=0$. We will show that the mapping \[ p(x) = \begin{cases}
+p_{\delta(U)}(x) & x_{uv}=1 \land x_{uw}=1 \\
+x & \text{ else }
+\end{cases} \] is improving for the multi-cut. Let $x \in X$, $z=p(x)$ and $x_{uv} \cdot x_{uw} \neq \beta$, and thus $x_{uv} \cdot x_{uw}=1$ for $c_{uv,uw}>0$. 
+Then \begin{equation}
+\begin{split}
+    &\sum_{k,l,m \in V} c_{kl,lm} (z_{kl} z_{lm} - x_{kl} x_{lm} ) \\
+    & = -c_{uv,uw} + \sum_{k,l,m \in V \setminus \{u,v,w\}} c_{kl,lm} (z_{kl} z_{lm} - x_{kl} x_{lm} ) \\
+    & \leq - |c_{uv,uw}| + \sum_{k,l,m \in V \setminus \{u,v,w\} }  |c_{kl,lm}| 
+\end{split}
+\end{equation}
+\CD{}{NOTE: Is this theorem equivalent to Th. 2 from J-H's paper for the case of a complete graph?} \EN{}{Frankly, I do not know, but I don't think so, since in Theorem 2 the author optimises over the set of edges, and also makes different assumptions than we make here.}
+
+\CD{}{NOTE: Is there any connection to Th. 1 and Corollary 1 from J-H's paper?} \EN{}{There are definitely parallels to the edge criterion (Theorem 1) from J-H Langes paper. However, in that we optimise over the set of edges and not over the set of vertices as we do in this example. The same is true for Corollary 1. Moreover, the assumptions are quite different to the ones here, too: Some edges are supposed to be part of the cuts $\delta(U)$ and $\delta(W)$. Hence, there is no close connection to Th.1 or Corollary 1 from J-H Langes paper. Note, however, that the idea of the proof is very similar to the proofs for both Thm. 1 and Corollary 1.}
+
+
+\subsection{Implementation for the case $\beta=1$}
+We give pseudo code for the implementation for the case that $\beta=1$. Let $K \subseteq V^3$ be the set of vertices s.t. $c_{uv,uw} \leq 0$, that is: \[ K=\{(u,v,w) \in V^3: c_{uv,uw} \leq 0\} \] For now, we abuse notation and refer to $K$ as both the nodes in $V^3$ as described above, and also the pair of edges related, e.g. here $uv, uw$ s.t. $c_{uv,uw} \leq 0$. 
+Let $C_i \subseteq K$ be the set of nodes of the $i$-th cluster, $i \geq 1$:
+\[C_i = \{(u,v,w) \in K: u,v,w \text{ in cluster } i \} \]
+Within each cluster, all edges are connected. We refer to the corresponding set of edges that are contained in cluster $C_i$ as $E_i$:
+\[ E_i= \{ e \in E: e=(u,v) \text{ for some } u \in C_i, v \in C_i \} \]
+How I thought about the clustering first is the following: 
+\begin{enumerate}
+    \item Initialise $(u,v,w) \in V^3$: Pick the first set of edges s.t. the theorem is fulfilled. For $(u,v,w) \in K$: If (1) is fulfilled: Add $u,v,w$ to $C_1$ and $uv,uw,vw$ to $E_1$. 
+\item Pick next set of edges in $K$ with which we can extend $C_1$. Obtain new pair of edges, with one already being connected. 
+\item Check that condition is satisfied for new pair of edges. If it is, add it to cluster $C_1$. \item Repeat until we cannot find an edge $e$ s.t. $(e,f)$ fulfills criteria for some $f \in K_1$. Then cluster $C_1$ is complete. 
+\item Find the next cluster $C_2$: Again, choose some vertices $(u,v,w) \in K\setminus C_1$. For $(u,v,w) \in K \setminus C_1$: 
+If condition (1) is satisfied, add $u,v,w$ to $C_2$ and $uv,uw,vw$ to $E_2$. 
+\item Pick next set of edges with which we can extend $C_2$. Do this as long as cluster $C_2$ is full. Then, again, choose some vertices $(u,v,w) \in K \setminus C_1 \cup C_2$. Repeat. 
+\end{enumerate}
+
+\begin{algorithm}[h]
+\SetAlgoLined
+\KwResult{Obtain an optimal clustering for 3-node application.}
+Let $C=\emptyset$ and $C_0=\{u,v,w\} \in K \setminus C$. \\
+\If{there are still nodes in $V$ or if there are still pairs of edges in $K$:}{\For{$i \geq 1$}{1. Initialise cluster $C_i$ with some vertices $(u,v,w) \in K \setminus C$ \; }
+    2. Extend cluster C_i: \\ \For{$e \in E_i$}{ \If{$(e,f) \in K$ for some $f$ and $(e,f)$ satisfies (3): }{Add $f$ to $C_i$.}}
+    3. Repeat until there exists no $e \in E_i$ anymore s.t. $(e,f)$ fulfills (3) for some $f \in K$ \;
+    4. Update $C$: $C=C \cup C_i$}{Stop. The optimal clustering is described by all the clusters $C_i$}  
+\caption{Find an optimal clustering for 3-node application}
+\end{algorithm}
+
+
+
+\section{Implementation of the edge criterion with node labelings}
+We conclude with some pseudo code to apply the edge criterion: 
+
+\begin{algorithm}[h]
+\SetAlgoLined
+\KwResult{Obtain an optimal clustering for graph G.}
+Let $U= \emptyset$. \\
+\For{$W \in \mathcal{V} \setminus U$}{ \eIf{one of 2(a)-(d) holds}{ \eIf{(18) holds}{Fix $f_W(x^*,y^*)=1$, $U=U \cup W$}{$U=U \cup W$}} {  \If{one of 1(a)-(e) holds}{ \eIf{(18) holds}{Fix $f_W(x^*,y^*)=1$, $U=U \cup W$}{$U=U \cup W$}}}}
+\caption{Finding an optimal clustering for a graph with node labels using the edge criterion}
+\end{algorithm}

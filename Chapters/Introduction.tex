@@ -1,0 +1,55 @@
+\section{First thoughts}
+We are interested in Optimisation problems whose feasible solutions are all possible decompositions of a given graph. This can be useful in many areas. For example in image analysis one has to answer the question which structures one can see. We want to write down an optimisation problem, of which the feasible solutions are all possibilities to decompose the image. How to "correctly" decompose the picture, such that a human would decompose it in the same way? One can show that the well-defined graph decomposition and a multi-cut is equivalent. So the first step is to not explicitly optimise over the possible graph decompositions, but over the multi-cuts of the graphs, since there is a $1 - 1$ relation and it is much easier to optimise over the multi-cuts.  We use the observation that every graph decomposition is a multi-cut and, in fact, a multi-cut fully characterises any graph decomposition. However, not every decomposition of edges defines a decomposition of graphs. As a toy example, consider the triangle with three edges. A decomposition that cuts only one edge does not well-define the decomposition of the graph. Hence, the question arises: Which subsets of edges well-define the decomposition of a graph? The answer is: multi-cuts. Hence we optimise over $\{0,1\}$-vectors that fulfill a specific inequality system. On another view point, it was shown in \cite{Demaine} that minimum multi-cut problem is equivalent to the correlation clustering problem proposed in \cite{Bansal}. 
+\EN{}{I will of course write more for the introduction later, this is just writing down the motivation that I am familiar with for this problem.}
+
+
+
+
+\section{Example for persistency criteria: Move a node}
+
+We have a graph $G=(V,E)$ and a given clustering of it. There are two clusters A and B. We investigate the following problem: 
+\[ \min_{x \in X} \langle c,x \rangle,  \] where 
+\[ X = \{ x \in \{0,1\}^E: x \text{ satisfies } (1) \} \] 
+\begin{equation}
+\forall C \in \text{cycles}(G) \quad \forall e \in C: x_e \leq \sum_{f \in C / \{e\} } x_f
+\end{equation}
+We change the clustering in the following way: Move one node $w$ of cluster B to cluster A. WLOG, suppose that the cut dividing the nodes in two clusters is at edge $e=\{v,w\}$ (so $v$ is in $A$).
+The clustering is defined via an edge labeling $x: E \rightarrow \{0,1\}$, where $E$ is the set of edges, containing edges of form $e=\{v,w\}, v \in V, w \in W$. 
+\[ x_{v,w}:=  \begin{cases}
+1 & \text{if} \{v,w\} \text{is cut} \\
+0 & else \end{cases} \] 
+
+The goal of this piece of writing is to define a persistency criterion for this procedure. That is: Firstly, find a mapping that describes this procedure and secondly, find conditions so that this mapping is improving. An improving mapping is defined as follows.
+\begin{definition}
+A mapping $p: X \rightarrow X$ with the property \[ \langle c, p(x) \rangle \leq \langle c, x \rangle \quad \forall x \in X \] is called \textit{improving mapping}.
+\end{definition}
+We define the mapping described above in the following way. The function $p$ moves node $w$ in cluster B to cluster A and leaves all the other nodes in the same cluster. For $v$ in cluster A, and $\forall i \in V/\{w, v\}$, we have:
+\[ p(x)_{v,w}:=  \begin{cases}
+1 & \text{if} \{v,w\} \text{is cut} \\
+0 & else \end{cases} \]
+
+Note that $x_{i,w}=x_{w,i}$. The intuition behind this mapping is that the cut is not happening at edge $\{v,w\}$ anymore, but instead at all other edges starting or ending in $w$. 
+We are interested in finding persistency criteria, that is under which conditions is this mapping improving. We consider two cases, the linear cost function and the quadratic cost function. 
+\begin{enumerate}
+\item \textbf{Linear cost function:} Consider the cost function \[ \langle c, x \rangle= \sum_{e \in E} c_e x_e = \sum_{  e=\{v,w\} \in E } c_{v,w} x_{v,w}, \] 
+We introduced the node-notation, because it allows us to refer to end- and start points of edges. 
+For example, we refer to the sum $ \sum_{i \in V} c_{w,i}$ as the sum of costs of the edges starting (or ending) in $w$. We introduce the edge costs $c_{w,i}$ as follows:
+\[c_{w,i}:= \begin{cases}
+c_{w,i} & \text{if} \exists e \in E: e=\{w,i\} \\
+0 & \text{else} \end{cases} \]
+How does the cost function look like before applying the mapping $p$? Well, it is just the cost of the cut edge. Then, after applying the mapping $p$, the cost function is the sum of all edges defining the new cut. This leads us to the following criterion: If condition (3) is fulfilled, then the mapping $p$ as defined in (2) is improving. 
+\begin{equation}
+\sum_{i \in V/ \{ v,w\} } c_{w,i} \leq c_{w,v},  
+\end{equation}\\
+\item \textbf{Quadratic cost function:} Consider the quadratic cost function 
+\[  \sum_{  e=\{v,w\} \in E } c_{v,w} x_{v,w} + \sum_{ (e,f) \in \binom{E}{2},  e=\{v,w\}, f=\{y,z\} } c_{ \{v,w \}, \{y,z \}} x_{v,w} x_{y,z}  \]
+The costs $c_{e,f}$ refer to the costs to cut \textit{both} edges $e$ and $f$. In particular: We introduce the edge costs $c_{\{w,i\}, \{w,j\}}$ as follows:
+\[
+c_{\{w,i\}, \{w,j\}}:=  \begin{cases} 
+c_{\{w,i\}, \{w,j\}} & \text{if } \exists e \in E: e=\{w,i\} \land   \exists f \in E: f= \{ w,j\} \\
+0 & \text{else } \end{cases} \]
+How does the cost function look like before applying $p$? Since all the connected edges $f$ have $x_f =0$, if there is only one cut happening, the cost function is equal to the cost of the edge of the cut, and there are no mixed terms. \\
+How does the cost function look like after applying $p$? It contains all the terms that define the new cut: All edges that connect to $w$ (except the edge at the old cut $\{v,w\}$) plus the mixed terms (combinations) of these edges. 
+Hence, in order for $p$ to be an improving mapping, we need the weight of the ''old" cut to be more or equal than the cost of the new cuts summed up, plus their mixed terms. The criterion reads: 
+The mapping (2) is improving, if condition (4) is fulfilled. 
+\begin{equation}  \sum_{i \in V / \{ v,w\} } c_{w,i} + \sum_{{i,j \in V / \{w, v\}} , i \neq j} c_{\{w,i\}, \{w,j\}} \leq c_{v,w} \end{equation}

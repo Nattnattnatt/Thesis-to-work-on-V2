@@ -1,0 +1,688 @@
+The next step is a generalisation of the persistency criteria to higher orders. We will first describe the problem statement, then define a multicut on a hypergraph and then describe the persistency criteria. 
+
+\section{Problem statement}
+In this section, we state the higher order weighted multi-cut problem. Feasible solutions define a \textit{clustering} on a given graph. We take the notation from \cite{Shek}. A \textit{hypergraph} $(V,\mathcal{E})$ is given by the set of nodes $V$ and the set of hyperedges $\mathcal{E} \subset 2^E$. We assume that $V$ is totally ordered and each hyperedge $E' \in \mathcal{E}$ is identified with the tuple of elements of $E'$ ordered w.r.t. the total order of $V$. We will further assume that $\emptyset \in \mathcal{E}$ and $\mathcal{E}$ contains all singletons: $(\forall s \in V)$  $\{s \} \in \mathcal{E}$. Let $X_s$ be a finite set of \textit{labels} associated to a node $s \in V$. The assignment of labels to all edges $x: V \to X$ is called a \textit{labeling}. An instance of the problem is defined with respect to the following data: \begin{itemize}
+    \item A finite hypergraph $G=(V,\mathcal{E})$ whose clustering we care about. 
+    \item $J_k:=\{A \subset 2^E \mid |A|=k\}\subseteq \mathcal{E}$ for $k \leq |E|$. $J_k$ stores all the $k$-tuples of $E$, that is all sets of edges that have cardinality $k$. There are $\binom{|E|}{k}$ of them, so $|J_k|=\binom{|E|}{k}$. Refer to these sets contained in $J_k$ as $j^k_{i}$ for $i \in [\binom{E}{k}]$.
+    \item For each $k$-tuple of edges, there is a cost functions $c_k \colon {E \choose k} \to \mathbb{R}$ for $k \leq |E|$
+\end{itemize}
+The combinatorial optimisation problem with multi-linear cost function we consider is the following:
+\begin{equation}
+\tag{P}
+\min_{x \in X} \sum_{E' \in \mathcal{E}} f_{E'}(x_{E'}) \quad \text{ s.t. } x \in X, 
+\end{equation}
+where the objective function $f: X \rightarrow \mathbb{R}$ is defined as \[ f_{E'}(x_{E'})=c_{E'} \prod_{e \in E'} x_e. \] 
+Note that this is an instance of the more general problem of energy minimisation with the energy function $E_f: X \to \mathbb{R}$, with $E_f(x)=\sum_{E' \in \mathcal{E}} f_{E'}(x_{E'})$.
+We identify any clustering of the graph with the set of those edges that straddle distinct clusters. These sets of edges are called \textit{multi-cuts} of the graph \cite{Chopra}. They have the property that no cycle in the graph intersects with a multi-cut in precisely one edge. The following definition, taken from \cite{Andres}, makes this precise:
+\begin{definition}{(Multi-cut)}
+For any graph $G=(V,E)$, a subset $M \subseteq E$ of edges is called a \textit{multi-cut} of $G$ if, and only if, for every cycle $C \subseteq E$ of $G$, we have $|C \cap M| \neq 1$.
+\end{definition}
+Concretely, we consider a set $X$ of binary labelings $x: E \rightarrow \{0,1\}^E$ of the edges such that the set $x^{-1}(0)$ of those edges that are labeled $0$ well-defines a multi-cut and thus a clustering of the graph. For any edge $e \in E$, we then have $x_e=0$ indicating that the incident nodes of $e$ are in distinct clusters (edge $e$ is \textit{cut}), or $x_e=1$ indicating that the incident nodes are in the same cluster (edge $e$ is \textit{connected}). Formally: 
+\begin{equation}
+    X=\Bigg\{ x \in \{0,1\}^E \mid
+   \forall C \in \text{cycles}(G) \quad \forall e \in C: 1-x_e \leq \sum_{f \in C \setminus \{e \}} (1-x_f) \Bigg\}
+\end{equation}
+The following Lemma shows that the set $x^{-1}(0)$ indeed well-defines a multi-cut. 
+\begin{lemma}
+For any graph $G = (V,E)$ and any $x \in \{0,1\}^E$, the set $x^{-1}(0)$ of those edges that are labeled $0$ is a \textit{multi-cut} of $G$ iff $x \in X$. It is sufficient to consider only chordless cycles in $X$.
+\end{lemma}
+\CD{Refer to the elements in $j^k_{i}$ (the edges of the $k$-tuples) as $j^k_{i_h}$ for $h \in [k]$.}{NOTE: The notation is really complicated. Would it be possible to make it simpler?} \EN{}{unfortunately I don't think so but maybe we can find a way together.}
+Let us consider the cost function $f$: Note that if $\mathcal{E}$ contains only the singletons $e \in E$, then the cost function is linear. If $\mathcal{E}$ contains singletons and pairs $(e,f) \in J_2$, then the cost function is quadratic. So generally speaking: If $\mathcal{E}$ contains all terms of size up to $k$ ($J_k$ for $k \leq |E|$), then the cost function has degree $k$.
+For the following, we adopt the notation from \cite{Comb} and generalise it.
+\CD{}{NOTE: please use simplified notations}
+We distinguish non-negative and negative $k$-tuples of edges, for $k \leq |E|$ by writing $E_k=E^+_k \cup E^-_k$. That is: $E^+_k= \{ j^k \in J_k: c_{j^k} >0 \}$ and $E^-_k= \{ j^k \in J_k: c_{j^k} \leq 0\}$. $c_{j^k}$ is the cost associated with cutting all edges in the $k$-tuple $j^k$. Note that $c_{j^k}$ is independent of $c_{j^k_i}$ for all $i \leq k$. 
+For any two disjoint subsets of vertices $U,W \subseteq V$ let $\delta(U,W)= \{(u,w) \in E \mid u \in U, w \in W\}$ denote the set of edges that have one node in $U$ and one node in $W$.
+We write $\delta(U):=\delta(U,V \setminus U)$.
+Further, we are often interested in the following set (if considering only edges and not tuples of edges): the set of edges having at least one node in $U$ as $\chi(U)= \{(e,f) \in V^2 \mid e \in U \vee f \in U\}$. This leads to the following generalisation: Let $\chi_k(U) \subset J_k$ contain all sets of $k$ edges that have at least one edge in $\delta(U)$.
+\CD{}{NOTE: change the notation here as well please} \EN{}{which notation? in $\chi_k(U)$ and $\chi_k(U,W)$? }
+That is, at least one of the edges has one node in $U$ and one node in $V\setminus U$:
+\[ \chi_k(U)= \{ \forall i \in [k]: j^k_i \in \delta(U) \}^C \] 
+Sometimes we are also interested in the sets that have at least one $k$-tuple not in $\delta(U) \cup \delta(W)$. So we define, for any two subsets $U$ and $W$ of $V$:
+\[ \chi_k(U,W):= \{ \forall i \in [k]: j^k_i \notin \delta(U) \cup \delta(W)\}^C \]
+Note that $\chi_k(U) \subset J_k$ and $\chi_k(U,W) \subset J_k$.
+
+
+
+
+
+\section{Definition of a multi-cut defined on a hypergraph}
+
+We use the following notation of a multi-cut from \cite{Margret}. In the following, we will describe a multicut on the hypergraph. Note that there are many similarities to the multicut for a standard graph so we will point them out as we go along. The optimisation problem is such that the feasible solutions correspond to decompositions of a hypergraph. Compare that for a standard graph, the feasible solutions of the general multicut problem correspond to decompositions of a graph. 
+The cost function assigns, for any set $e$ of nodes, a cost $c_e$ to all decompositions for which all nodes $v \in e$ are in the same component. 
+Compare to the multicut defined on a normal graph: The cost function assigns, for any set $e$ of edges, a cost $c_e$ to all cuts of the set $e$ (and thus of decompositions for which all edges contained in $e$ are cut). 
+A \textit{component} of a hypergraph is any non-empty subgraph that is node-induced and connected by edges of any order. This is what we quite intuitively understand as a subgraph. A \textit{decomposition} of a hypergraph is any partition $\Pi$ of the node set, s.t. for every $V' \in \Pi$, the subgraph induced by $V'$ is a connected component of the hypergraph. 
+This is very similar how component and decompositions are defined for normal graphs, compare \cite{Andres}. \\
+An instance of the problem is then defined w.r.t. an undirected hypergraph $G=(V,F)$ and an additional set of hyperedges $F'$ connecting sets of nodes that are not necessarily neighbours in $G$. Two nodes are called neighboured if they are connected via some hyperedge. That is, with $E=F \cup F'$ we make sure that we really consider all edges connecting $G$. 
+Practically, we distinguish between pairwise edges $e \in F_p \cup F'_p$ with $|e|=2$, and higher-order edges $e \in F_h \cup F'_h$ with $|e| >2$. So $e$ is for example $(e_1, e_2)$ (a set of two hyperedges), a triplet of hyperedges $(e_1,e_2,e_3)$, etc.  
+
+In our experiments (and also drawings) we limit $F$ and $F'$ to edges $e$ of order $|e|=2$ or 3. We consider both graphs with 2 and 3 hyperedges in the drawings. 
+
+For every edge $e \in E=F \cup F'$, a cost $c_e \in \mathrm{R}$ is assigned to all feasible solutions for which all nodes connected by $e$ are in the same component. (Compare to the costs $c_e$ for connecting the nodes connected to the edge set $e$.) Then, we can define a feasible set $Y_E \subseteq \{0,1\}^E$, whose elements $y \in Y_E$ are 01-labelings of all edges $E=F \cup F'$. Compare this to the multicut problem on a normal graph, we define a feasible set $X_E \subseteq \{0,1\}^E$, whose elements $x \in X_E$ are labelings of all edges $e \in E$. 
+
+The feasible set is defined s.t.: \begin{enumerate}
+    \item feasible solutions $y \in Y_E$ relate one-to-one to the decomposition of the hypergraph $G$.
+    \item For every edge $e \in E$, $y_e=1$ (that is, the hyperedge $e$ is connected) $\iff$ all nodes connected by $e$ are in the same component of $G$.   
+\end{enumerate}
+It is rigorously defined by linear inequality constraints on higher-order edges (2) and (3), cycle inequalities (4) and path and cut constraints (5) and (6). 
+
+\begin{definition}{(Higher-order multicut)}
+Let $G=(V,\mathcal{E})$ be a hypergraph. Let $\mathcal{E}' \subseteq \bigcup_k \binom{V}{k} \setminus \mathcal{E}.$ So $\mathcal{E}'$ is the complement of $\mathcal{E}$. 
+Let $c: E:=\mathcal{E} \cup \mathcal{E}' \to \mathbf{R}$. 
+The multicut problem is \begin{equation}
+    \min_{y \in Y_E} \sum_{e \in E} c_e y_e, 
+    \end{equation} with $Y_E \subseteq \{0,1\}^E$ the set of all $y \in \{0,1\}^E$ with 
+\begin{equation}
+    \forall e, e_h \in E| e \subset e_h: y_{e_h} \leq y_e \\
+\end{equation}
+This is the natural ordering on the hypergraph. 
+\begin{equation}
+    \forall e_h \in E| G = (e_h, e \in E|e \subset e_h) \text{ is connected }: \break 
+    (1-y_{e_h}) \leq \sum_{e \in E| e \subset e_h} (1-y_e) 
+\end{equation}
+This is the definition of a multicut, very similar for a normal graph. 
+\begin{equation}
+   \forall C \in \text{cycles}(G) \quad \forall e \in C: (1-y_e) \leq \sum_{e' \in C \setminus \{e \}} (1-y_{e'}) 
+\end{equation}
+This is the similar cycle definition as we had before. 
+\begin{equation}
+    \forall e \in F, \forall vw \subset e \quad \forall P \in vw-\text{path}(G):
+    1-y_e \leq \sum_{e' \in P} (1-{y_e}') 
+\end{equation}
+\begin{equation}
+    \forall e \in F, \forall vw \subset e  \quad \forall C \in vw-\text{cuts}(G):
+    y_e \leq \sum_{e' \in C} {y_e}' 
+\end{equation}
+\end{definition}
+Note: In different applications one needs only some of the above described conditions. 
+
+\section{Persistency}
+We use the notation introduced in \cite{Shek}. A \textit{partial assignment} $y_{\mathcal{A}} \in X_{\mathcal{A}}$, where $\mathcal{A} \subset V$, is called \textit{weakly persistent} if there exists an optimal solution $x^*$ such that $x^*_{\mathcal{A}}=y_{\mathcal{A}}$. In other words, $y_{\mathcal{A}}$ can be extended to a global solution. Partial assignment $y_{\mathcal{A}}$ is called \textit{strongly persistent} if $x^*_{\mathcal{A}}=y_{\mathcal{A}}$ holds for all optimal solutions $x$. It turns out that strong persistency is more tractable, whereas proofs are generally easier to obtain in the weak form and most results in the literature deliver weak persistency. \cite{Shek}
+For any labeling $x$, not necessarily optimal, replacing part of $x$ on $\mathcal{A}$ with $y_{\mathcal{A}}$, the \textit{overwrite} operation, denoted in \cite{Shek} by $x[\mathcal{A} \leftarrow y]$, has the following \textit{autarky} property: 
+\begin{equation}
+    \sum_{E' \in \mathcal{E}} f(x[\mathcal{A} \leftarrow y]) \leq \sum_{E' \in \mathcal{E}} f(x) 
+\end{equation}
+The overwrite operation can be represented by a discrete mapping $p: X \rightarrow X: x \rightarrow x[\mathcal{A} \leftarrow y]$. The following generalisation of autarky to an arbitrary mapping is proposed. 
+\begin{definition}
+A mapping $p \colon X \to X$ with the property 
+\begin{equation}
+\sum_{E' \in \mathcal{E}} f_{E'}(p(x_{E'})) \leq \sum_{E' \in \mathcal{E}} f_{E'}(x_{E'}) 
+\end{equation} 
+is called improving mapping. That is here: 
+\begin{equation}
+\sum_{E' \in \mathcal{E}} c_{E'} \prod_{e \in E'} p(x)_e \leq 
+\sum_{E' \in \mathcal{E}} c_{E'} \prod_{e \in E'} x_e.
+\end{equation}
+\end{definition}
+\begin{definition}
+A mapping $p \colon X \to X$ with the property 
+\begin{equation}
+\sum_{E' \in \mathcal{E}} f_{E'}(p(x_{E'})) < \sum_{E' \in \mathcal{E}} f_{E'}(x_{E'}) 
+\end{equation} 
+is called strictly improving mapping. That is here: 
+\begin{equation}
+\sum_{E' \in \mathcal{E}} c_{E'} \prod_{e \in E'} p(x)_e < 
+\sum_{E' \in \mathcal{E}} c_{E'} \prod_{e \in E'} x_e.
+\end{equation}
+\end{definition}
+
+
+
+It easily follows from the definition that if $p$ is an improving mapping, then there exists an optimal solution $x^* \in p(X)$ and if $p$ is strictly improving then all optimal solutions are contained in $p(X)$. In this way an improving mapping \textit{reduces the search space} from $X$ to $p(X)$. \\ We restrict ourselves to idempotent mappings, i.e. mappings satisfying $p \circ p=p$. This restriction is in fact justified: For an improving node-wise mapping $p$ its compositional power $p^k$ will be idempotent for some $k$ and provides equally good or better reduction with $p^k(X) \subseteq p(X)$. From the property of idempotent maps it follows that knowing an improving mapping $p$, we can eliminate labels $(s,i)$ for which $p_s(i) \neq i$ and there will remain at least one global minimiser of $E_f(x)=\sum_{E' \in \mathcal{E}} f_{E'}(x_{E'})$. 
+
+
+
+\begin{lemma}{(Persistency)}
+Let $p: X \rightarrow X$ be an improving mapping. If $\exists \beta \in \{0,1\}$ and $\exists j^k_i \in J_k$ for all $k \leq n$ such that: \[\prod_{h \leq k} p(x)_{j^k_{i_h}} = \beta \quad \forall x \in X.\]
+Then \[\prod_{h \leq k} x^*_{j^k_{i_h}} = \beta \quad \forall x \in X.\] In particular, if $\beta=1$, then \[ x^*_{j^k_{i_h}}=1 \text{ for all } h \leq k. \] 
+\end{lemma}
+\textit{Proof:} Let $x$ be an optimal solution of $(P)$. Apply the improving mapping $p$ to $x$, then clearly $p(x)=x^*$ is also optimal. The rest follows straightaway from the equalities above.  
+
+
+\subsection{Elementary mappings}
+\EN{}{To do: Adapt illustration such that nodes are only connected to hyperedges and not to each other.}
+
+The purpose of this piece is to visualize the elementary cut mappings $p_{\delta(U)}(x)$, $p_U(x)$ and $p^{\Delta}_{\delta(U)}(x)$, all defined from $X \to X$, where 
+\begin{equation}
+    X=\Bigg\{ x \in \{0,1\}^E \mid
+   \forall C \in \text{cycles}(G) \quad \forall e \in C: 1-x_e \leq \sum_{f \in C \setminus \{e \}} (1-x_f) \Bigg\}
+\end{equation}
+In the graphs, we will not consider all hyperedges since this is too much and only confusing. Consider the graph consisting of hyperedges containing each 3 nodes. 
+The mappings are defined with respect to a set $U$. $U$ can be any set of nodes, but it only makes sense for $U$ to have a less or equal number of nodes than the hyperedges that we consider has. Why? By contradiction, let $U$ have more elements than the hyperedge that we consider in the drawing. Then no hyperedge can have one node in $U$ and one node not in $U$, since $U$ has too many nodes. So necessarily $\delta(U)=\emptyset$ and the clustering stays the same. 
+
+\subsubsection{The elementary cut mapping}
+The elementary cut mapping $p_{\delta(U)}(x): X \to X$ is defined as \[ p_{\delta(U)}(x)_{\mathcal{F}} = \begin{cases}
+ \vec{0}  & \text{ if } \mathcal{F} \in \delta(U) \\
+  x_{\mathcal{F}} &\text{ else} 
+\end{cases} \] 
+The idea to consider the cut $\delta(U)$ stems from the Kernighan-Lin Algorithm. It means that we cut if the edge is between two clusters, and not cut else.  
+
+Consider some simple hyperedges with three nodes. Assume we have the given hyperedges $\mathcal{E}$, $\mathcal{F}$ and $\mathcal{G}$. We introduce the set $U=\{w,v\}$. Then $\delta(U)$ contains all hyperedges that have at least one node in $U$ and one node in $U^C$. So in this example, $U=\{\mathcal{F}, \mathcal{G}\}$. 
+The only way to obtain two clusters out of one is to break up the big cluster to a singleton and the rest. For example, consider $U=\{u,v,y\}$. Then all hyperedges either fully contain $U$ or not contain an element of $U$. Thus $\delta(U)=\emptyset$ and the clusters stay the same. Then the cut mapping is just the identity mapping! 
+\begin{figure}[h]
+\begin{tikzpicture}[auto, thick]
+  % Place super peers and connect them
+  \foreach \place/\name in {{(0,0)/a}, {(2,0)/b}, {(0,2)/c}}
+    \node[hyperedges] (\name) at \place {};
+    %\node[label=above{E}] () {a}
+   % \node [label={[label distance=1cm]30:label}] (a) {E}
+   % \node [draw] at ([shift={(95:1)}]a.60) {Second label}
+   %\path (0,0) node(a) {Hello World!}
+   % Place normal peers
+  \foreach \pos/\i in {below left of/1, above of/2, right of/3}
+   \node[nodess, \pos=c] (c\i) {};
+   \foreach \speer/\peer in {c/c1,c/c2,c/c3}
+    \path (\speer) edge (\peer);
+   %
+  \foreach \pos/\i in {below of/1}
+    \node[nodess, \pos =a ] (a\i) {};
+   \foreach \speer/\peer in {a/a1}
+   \path (\speer) edge (\peer);
+   %
+   \foreach \pos/\i in {below left of/1,  right of/2}
+   \node[nodess, \pos =b ] (b\i) {};
+   \foreach \speer/\peer in {b/b1,b/b2}
+   \path (\speer) edge (\peer);
+   %%%%%%%%
+   \foreach \source/\dest in {a/c1, a/c3, b/c3}
+   \path (\source) edge (\dest);
+   
+   % Legends
+  \node[legendsp] at (5,0) {\small{Hyperedges}};
+  \node[legendp] at (5,2) {\small{Nodes}};
+   \node[legend_general] at (0,4) {\small{\textsc{Clustering before mapping}}};
+   \node at (c) {$\mathcal{E}$};
+   \node at (a) {$\mathcal{F}$};
+   \node at (b) {$\mathcal{G}$};
+   \node at (c1) {$u$};
+   \node at (c3) {$y$};
+   \node at (c2) {$z$};
+   \node at (b1) {$w$};
+   \node at (b2) {$x$};
+   \node at (a1) {$v$};
+\end{tikzpicture}
+\end{figure}
+\begin{figure}[h!]
+\begin{tikzpicture}[auto, thick]
+  % Place super peers and connect them
+  \foreach \place/\name in {{(0,0)/a}, {(2,0)/b}, {(0,2)/c}}
+    \node[hyperedges] (\name) at \place {};
+    %\node[label=above{E}] () {a}
+   % \node [label={[label distance=1cm]30:label}] (a) {E}
+   % \node [draw] at ([shift={(95:1)}]a.60) {Second label}
+   %\path (0,0) node(a) {Hello World!}
+   % Place normal peers
+  \foreach \pos/\i in {below left of/1, above of/2, right of/3}
+   \node[nodess, \pos=c] (c\i) {};
+   \foreach \speer/\peer in {c/c1,c/c2,c/c3}
+    \path (\speer) edge (\peer);
+   %
+  \foreach \pos/\i in {below of/1}
+    \node[nodess, \pos =a ] (a\i) {};
+   \foreach \speer/\peer in {a/a1,a/c1,c/c3}
+   \draw [dashed] (\speer) edge (\peer); 
+   %
+   \foreach \pos/\i in {below left of/1,  right of/2}
+   \node[nodess, \pos =b ] (b\i) {};
+   \foreach \speer/\peer in {b/b1,b/b2}
+   \draw[dashed] (\speer) edge (\peer);
+   %%%%%%%%
+   \foreach \source/\dest in {a/c1, a/c3, b/c3}
+   \draw [dashed] (\source) edge (\dest); 
+   % Legends
+  \node[legendsp] at (5,0) {\small{Hyperedges}};
+  \node[legendp] at (5,2) {\small{Nodes}};
+   \node[legend_general] at (0,4) {\small{\textsc{4 clusters after mapping}}};
+   \node at (c) {$\mathcal{E}$};
+   \node at (a) {$\mathcal{F}$};
+   \node at (b) {$\mathcal{G}$};
+   \node at (c1) {$u$};
+   \node at (c3) {$y$};
+   \node at (c2) {$z$};
+   \node at (b1) {$w$};
+   \node at (b2) {$x$};
+   \node at (a1) {$v$};
+\end{tikzpicture}
+\end{figure}
+
+\subsection{The elementary join mapping}
+Next, we investigate the elementary join mapping $p_U(x): X \to X$, as motivated in the introduction. Firstly, for $2$ clusters: \[ p_U(x)_{\mathcal{F}}=\begin{cases}
+\vec{1} & \mathcal{E}=\{ (u,v,w): u \in A, v \in B\} \\
+x_{\mathcal{F}} &  \text{else} 
+\end{cases} \] 
+Secondly, for $3$ clusters: \[ p_U(x)_{\mathcal{F}}=\begin{cases}
+\vec{1} & \mathcal{E}=\{ (u,v,w): u \in A, v \in B, w \in C\} \\
+x_{\mathcal{F}}  &  \text{else} 
+\end{cases} \] 
+That is, for a hyperedge connecting $n$ nodes $u_1,u_2, ..., u_n$, where $n \geq 3$: For $2$ clusters: 
+\[ p_U(x)_{\mathcal{F}}=\begin{cases} \vec{1} & \mathcal{E}=\{ (u_1,..., u_n): u_j \in A, u_k \in B, j \leq n, k \leq n, j \neq k \} \\
+x_{\mathcal{F}} &  \text{else} 
+\end{cases} \] For $3$ clusters: 
+\[ p_U(x)_{\mathcal{F}}=\begin{cases}
+\vec{1} & \mathcal{E}=\{ (u_1,..., u_n): u_j \in A, u_k \in B, u_l \in C, j \leq n, k \leq n, l \leq n, j \neq k, l \neq k, l \neq j \} \\
+x_{\mathcal{F}} & \text{else} 
+\end{cases} \] 
+For $m$ clusters, where $m \leq n$: Let $A_1, ..., A_m$ be the different number of clusters, and let $i \leq m$. That is, we want $m$ nodes $u_1, ..., u_m$: $u_1 \in A_1, u_2 \in A_2, ....$: $u_i \in A_i$ for $i \leq m$.  
+\[ p_U(x)_{\mathcal{F}}=\begin{cases}
+\vec{1} & \mathcal{E}=\{ (u_1,..., u_n): u_i \in A_i \text{ for } i \leq m, \text{ each } u_i \text{ and } A_i \text{ is distinct.}  \} \\
+x_{\mathcal{F}} & \text{else} 
+\end{cases} \] 
+
+\[ p_U(x)_{\mathcal{F}}=\begin{cases}
+\vec{1} & \mathcal{F} \in \delta(U) \\
+\vec{1} & \mathcal{F} \in \cap_{A \in \Phi(U)} \delta(A) \setminus \delta( \cup_{A \in \Phi(U)} A) \\ 
+x_{\mathcal{F}} & \text{else}, 
+\end{cases} \] 
+where $\Phi(U) = \{A \in \text{comp}(X) | A \cap U \neq \emptyset \}$. The second line makes sure that also the border/edge of $U$ is being considered.
+
+
+\begin{figure}[h]
+\begin{tikzpicture}[auto, thick]
+  % Place super peers and connect them
+  \foreach \place/\name in {{(-1,0)/E}, {(2,0)/F}}
+    \node[hyperedges] (\name) at \place {};
+   % Place normal peers
+  \foreach \pos/\i in {above of/1, below right of/2, below of/3}
+   \node[nodess, \pos=E] (E\i) {};
+   \foreach \speer/\peer in {E/E1,E/E2,E/E3}
+    \path (\speer) edge (\peer);
+   %
+  \foreach \pos/\i in {below of/1, right of/2, above left of/3}
+    \node[nodess, \pos =F ] (F\i) {};
+   \foreach \speer/\peer in {F/F1,F/F2,F/F3}
+   \path (\speer) edge (\peer);
+   %%%%%%%%
+   %\foreach \source/\dest in {a/c1, a/c3, b/c3}
+   %\path (\source) edge (\dest);
+   % Legends
+  \node[legendsp] at (5,0) {\small{Hyperedges}};
+  \node[legendp] at (5,2) {\small{Nodes}};
+   \node[legend_general] at (0,4) {\small{\textsc{Clustering before mapping}}};
+   \node at (E) {$\mathcal{E}$};
+   \node at (F) {$\mathcal{F}$};
+   \node at (E1) {$a$};
+   \node at (E2) {$b$};
+   \node at (E3) {$c$};
+   \node at (F1) {$d$};
+   \node at (F2) {$e$};
+   \node at (F3) {$f$};
+\end{tikzpicture}
+\end{figure}
+Again, how does the mapping look after the joining? All nodes from $\mathcal{E}$ and $\mathcal{F}$ are now connected. \\
+\begin{figure}[h]
+\begin{tikzpicture}[scale=1]
+  % Place super peers and connect them
+  \foreach \place/\name in {{(-1,0)/E}, {(2,0)/F}}
+    \node[hyperedges] (\name) at \place {};
+   % Place normal peers
+  \foreach \pos/\i in {above of/1, below right of/2, below left of/3}
+   \node[nodess, \pos=E] (E\i) {};
+   \foreach \speer/\peer in {E/E1,E/E2,E/E3}
+    \path (\speer) edge (\peer);
+   %
+  \foreach \pos/\i in {below of/1, left of/2, above left of/3}
+    \node[nodess, \pos =F ] (F\i) {};
+   \foreach \speer/\peer in {F/F1,F/F2,F/F3}
+   \path (\speer) edge (\peer);
+   %%%%%%%%
+   \foreach \source/\dest in {E1/F1, E1/F2, E1/F3, E2/F1, E2/F2, E2/F3, E3/F1, E3/F2, E3,F3}
+   \path (\source) edge (\dest);
+   % Legends
+   \node[legend_general] at (0,4) {\small{\textsc{3 clusters after mapping}}};
+   \node at (E) {$\mathcal{E}$};
+   \node at (F) {$\mathcal{F}$};
+   \node at (E1) {$a$};
+   \node at (E2) {$b$};
+   \node at (E3) {$c$};
+   \node at (F1) {$d$};
+   \node at (F2) {$e$};
+   \node at (F3) {$f$};
+\end{tikzpicture}
+\end{figure}
+Suppose that we consider hyperedges with $n$ nodes. Here, $n=3$. Then the join mapping can join up to $n$ clusters. 
+We show this here with another example of $3$ clusters: 
+\begin{figure}[h]
+\begin{tikzpicture}[auto, thick]
+  % Place super peers and connect them
+  \foreach \place/\name in {{(-1,0)/E}, {(2,0)/F}, {(0,2)/G}}
+    \node[hyperedges] (\name) at \place {};
+   % Place normal peers
+  \foreach \pos/\i in {above of/1, below right of/2, below of/3}
+   \node[nodess, \pos=E] (E\i) {};
+   \foreach \speer/\peer in {E/E1,E/E2,E/E3}
+    \path (\speer) edge (\peer);
+   %
+  \foreach \pos/\i in {below of/1, right of/2, above left of/3}
+    \node[nodess, \pos =F ] (F\i) {};
+   \foreach \speer/\peer in {F/F1,F/F2,F/F3}
+   \path (\speer) edge (\peer);
+   
+   \foreach \pos/\i in {left of/1, above of/2, right of/3}
+   \node[nodess,\pos=G](G\i) {};
+   \foreach \speer/\peer in {G/G1,G/G2,G/G3}
+   \path (\speer) edge (\peer);
+   
+   % Legends
+   \node[legend_general] at (0,4) {\small{\textsc{3 cluster before mapping}}};
+   \node at (E) {$\mathcal{E}$};
+   \node at (F) {$\mathcal{F}$};
+   \node at (G) {$\mathcal{G}$};
+   \node at (E1) {$a$};
+   \node at (E2) {$b$};
+   \node at (E3) {$c$};
+   \node at (F1) {$d$};
+   \node at (F2) {$e$};
+   \node at (F3) {$f$};
+   \node at (G1) {$g$};
+   \node at (G2) {$h$};
+   \node at (G3) {$i$};
+\end{tikzpicture}
+\end{figure}
+
+
+\begin{figure}[h]
+\begin{tikzpicture}[auto, thick]
+  % Place super peers and connect them
+  \foreach \place/\name in {{(-1,0)/E}, {(2,0)/F}, {(0,2)/G}}
+    \node[hyperedges] (\name) at \place {};
+   % Place normal peers
+  \foreach \pos/\i in {above of/1, below right of/2, below of/3}
+   \node[nodess, \pos=E] (E\i) {};
+   \foreach \speer/\peer in {E/E1,E/E2,E/E3}
+    \path (\speer) edge (\peer);
+   %
+  \foreach \pos/\i in {below of/1, right of/2, above left of/3}
+    \node[nodess, \pos =F ] (F\i) {};
+   \foreach \speer/\peer in {F/F1,F/F2,F/F3}
+   \path (\speer) edge (\peer);
+   
+   \foreach \pos/\i in {left of/1, above of/2, right of/3}
+   \node[nodess,\pos=G](G\i) {};
+   \foreach \speer/\peer in {G/G1,G/G2,G/G3}
+   \path (\speer) edge (\peer);
+    
+    \foreach \source/\dest in {E1/F1, E1/F2, E1/F3, E2/F1, E2/F2, E2/F3, E3/F1, E3/F2, E3,F3, G1/E1, G1/E2,G1/E3,G2/E1,G2/E2,G2/E3,G3/E1,G3/E2,G3/E3,G1/F1,G1/F2,G1/F3, G2/F1,G2/F2,G2/F3,G3/F1,G3/F2,G3/F3}
+   \path (\source) edge (\dest);
+   
+   % Legends
+   \node[legend_general] at (0,4) {\small{\textsc{1 cluster after mapping}}};
+   \node at (E) {$\mathcal{E}$};
+   \node at (F) {$\mathcal{F}$};
+   \node at (G) {$\mathcal{G}$};
+   \node at (E1) {$a$};
+   \node at (E2) {$b$};
+   \node at (E3) {$c$};
+   \node at (F1) {$d$};
+   \node at (F2) {$e$};
+   \node at (F3) {$f$};
+   \node at (G1) {$g$};
+   \node at (G2) {$h$};
+   \node at (G3) {$i$};
+\end{tikzpicture}
+\end{figure}
+\subsection{The symmetric difference mapping}
+The symmetric difference mapping $p^{\Delta}_{\delta(U)}(x): X \to X$ is defined as follows: 
+\[ p^{\Delta}_{\delta(U)}(x)_{\mathcal{F}}: \begin{cases}
+1-x_{\mathcal{F}} & F \in \delta(U) \\
+x_{\mathcal{F}} & \text{ else} 
+\end{cases} \] 
+We consider the same hyperedges that we also used above to illustrate the elementary cut mapping $p_{\delta(U)}$. As usual, consider simple hyperedges with three nodes. Assume we have the given hyperedges $\mathcal{E}$, $\mathcal{F}$ and $\mathcal{G}$. We introduce the set $U=\{w,v\}$. Then $\delta(U)=\{\mathcal{F}, \mathcal{G}\}$. 
+\begin{figure}[h]
+\begin{tikzpicture}[auto, thick]
+  % Place super peers and connect them
+  \foreach \place/\name in {{(0,0)/a}, {(2,0)/b}, {(0,2)/c}}
+    \node[hyperedges] (\name) at \place {};
+    %\node[label=above{E}] () {a}
+   % \node [label={[label distance=1cm]30:label}] (a) {E}
+   % \node [draw] at ([shift={(95:1)}]a.60) {Second label}
+   %\path (0,0) node(a) {Hello World!}
+   % Place normal peers
+  \foreach \pos/\i in {below left of/1, above of/2, right of/3}
+   \node[nodess, \pos=c] (c\i) {};
+   \foreach \speer/\peer in {c/c1,c/c2,c/c3}
+    \path (\speer) edge (\peer);
+   %
+  \foreach \pos/\i in {below of/1}
+    \node[nodess, \pos =a ] (a\i) {};
+   \foreach \speer/\peer in {a/a1,a/c1,a/c3}
+   \draw [dashed] (\speer) edge (\peer); 
+   %
+   \foreach \pos/\i in {below left of/1,  right of/2}
+   \node[nodess, \pos =b ] (b\i) {};
+   \foreach \speer/\peer in {b/b1,b/b2}
+   \path (\speer) edge (\peer);
+   %%%%%%%%
+   \foreach \source/\dest in {b/c3}
+   \path (\source) edge (\dest);
+   % Legends
+   \node[legend_general] at (0,4) {\small{\textsc{Clustering before mapping $p^{\Delta}_{\delta(U)}$}}};
+   \node at (c) {$\mathcal{E}$};
+   \node at (a) {$\mathcal{F}$};
+   \node at (b) {$\mathcal{G}$};
+   \node at (c1) {$u$};
+   \node at (c3) {$y$};
+   \node at (c2) {$z$};
+   \node at (b1) {$w$};
+   \node at (b2) {$x$};
+   \node at (a1) {$v$};
+\end{tikzpicture}
+\end{figure}
+
+\begin{figure}[h]
+\begin{tikzpicture}[auto, thick]
+  % Place super peers and connect them
+  \foreach \place/\name in {{(0,0)/a}, {(2,0)/b}, {(0,2)/c}}
+    \node[hyperedges] (\name) at \place {};
+    %\node[label=above{E}] () {a}
+   % \node [label={[label distance=1cm]30:label}] (a) {E}
+   % \node [draw] at ([shift={(95:1)}]a.60) {Second label}
+   %\path (0,0) node(a) {Hello World!}
+   % Place normal peers
+  \foreach \pos/\i in {below left of/1, above of/2, right of/3}
+   \node[nodess, \pos=c] (c\i) {};
+   \foreach \speer/\peer in {c/c1,c/c2,c/c3}
+    \path (\speer) edge (\peer);
+   %
+  \foreach \pos/\i in {below of/1}
+    \node[nodess, \pos =a ] (a\i) {};
+   \foreach \speer/\peer in {a/a1,a/c1,a/c3}
+    \path (\speer) edge (\peer);
+   %
+   \foreach \pos/\i in {below left of/1,  right of/2}
+   \node[nodess, \pos =b ] (b\i) {};
+   \foreach \speer/\peer in {b/b1,b/b2,b/c3}
+    \draw [dashed] (\speer) edge (\peer);
+   %%%%%%%%
+   % Legends
+   \node[legend_general] at (0,4) {\small{\textsc{Clustering after mapping $p^{\Delta}_{\delta(U)}$}}};
+   \node at (c) {$\mathcal{E}$};
+   \node at (a) {$\mathcal{F}$};
+   \node at (b) {$\mathcal{G}$};
+   \node at (c1) {$u$};
+   \node at (c3) {$y$};
+   \node at (c2) {$z$};
+   \node at (b1) {$w$};
+   \node at (b2) {$x$};
+   \node at (a1) {$v$};
+\end{tikzpicture}
+\end{figure}
+We see that this mapping transforms the two clusters that were there before to three clusters. 
+
+\subsection{Special case: Fully connected graph}
+The application that we have in mind is for a fully connected graph. Hence we wonder how the different mappings look like for the fully connected graph. For now, let $V$ have 4 nodes: $u,v,w,x$, and again, the hyperedges have each $3$ nodes, say the hyperedges $\mathcal{E}, \mathcal{F}, \mathcal{G}, \mathcal{H}$. 
+Note that we can remove up to 2 hyperedges, and the graph is still fully connected. If we remove a third hyperedge, say we remove $\mathcal{E}, \mathcal{F}$ and $\mathcal{G}$, then the node that is contained in all hypergraphs $\mathcal{E}, \mathcal{F}, \mathcal{G}$ is a singleton for $\delta(U)=\{ \mathcal{E}, \mathcal{F}, \mathcal{G} \}$. We are of course interested in a generalisation: In order to break up a fully connected cluster, one needs to remove all hyperedges except one. The resulting cluster is then a singleton (the node that is contained in all hyperedges in $\delta(U)$ without the  the removed edges). We conclude the following: For a fully connected graph, we are interested in how a cut mapping will change the clustering. For the join mapping, again consider the case of 3 nodes per hyperedge. Then, assuming that there are two clusters $A$ and $B$ to join, each consisting of $n$ nodes, then there are $n^2(n-1)$ ways to connect the two clusters. If $A$ and $B$ have a different number of nodes, say $A$ has $m$ nodes and $B$ has $n$ nodes, then there are $\frac{mn}{2}(m+n-2)$ number of hyperedges we have to connect. Next, consider the case of $3$ cluster to join: Then we each take one node of each cluster. If cluster $A$ has $k$ nodes, cluster $B$ has $l$ nodes and cluster $C$ has $m$ nodes, then there are $k \cdot l \cdot m$ new connections. 
+
+
+
+
+
+\section{Persistency criteria}
+In this section, we develop persistency criteria for the minimisation problem $(P)$.
+\begin{theorem}{(Edge criterion)}
+Let $\mathcal{F} \in \mathcal{E}$. Suppose that there exists a subset $U \subseteq V$ that is connected. Let
+\[ \beta = \begin{cases}
+0 & \text{if } c_{\mathcal{F}} >0  \\
+1 & \text{if } c_{\mathcal{F}}  \leq 0 
+\end{cases}\]
+Note that $c_{\mathcal{F}}$ describes the cost for cutting the hyperedge $\mathcal{F}$. 
+\begin{enumerate}
+\item For $\beta=1$: If 
+\begin{equation*}
+ \mathlarger{\mathlarger{\sum}}_{k \leq n} - c_{j^k_i}+ \sum_{E' \in \chi_k(U) \setminus j^k_i} |c_{E'}| \leq 0,
+\end{equation*}
+\item For $\beta_k=0$: If
+\begin{equation*}
+ \mathlarger{\mathlarger{\sum}}_{k \leq n} - |c_{j^k_i}| +\sum_{E' \in \chi_k(U)\cap E^+_k \setminus j^k_i} c_{E'} \leq 0,  
+\end{equation*}
+\end{enumerate}
+then $\prod_{f \in \mathcal{F}} x^*_f = \beta$ in some optimal solution $x^*$ of (P).
+In particular: If $\beta=1$, then $x^*_f=1$ for all $f \in \mathcal{F}$.
+\end{theorem}
+
+\textit{Proof of (1):}
+We show that the mapping \[ p(x)= \begin{cases}
+    p_{\mathcal{F}}(p_{\delta_k(U)}(x)) & \text{ if } \neq \beta \\
+     x_{\mathcal{F}} & \text{else} 
+\end{cases} \]
+is improving for the multi-cut problem. Let $x \in MC$, $z=p(x)$ and suppose that $x_{\mathcal{F}} \neq \beta$. WLOG, $\mathcal{F}$ is a $k$-tuple, that is, it has $k$ entries. Remind, in this case, $\beta=1$ is fixed. We have:
+\begin{align*}
+    & \sum_{E' \in \mathcal{E}} c_{E'} \Big( \prod_{e \in E'} z_e - \prod_{e \in E'} x_e \Big) \\ 
+    & = \mathlarger{\mathlarger{\sum}}_{E' \in J_1} c_{E'} (\prod_{e \in E'} z_e - \prod_{e \in E'} x_e ) + ...  +    \mathlarger{\mathlarger{\sum}}_{E' \in J_n} c_{E'} (\prod_{e \in E'} z_e - \prod_{e \in E'} x_e ) \\
+    & =     c_{f}(z_f-x_f) + \mathlarger{\mathlarger{\sum}}_{e \in \delta(U) \setminus \{f \} } c_{e} (z_{e}-x_{e}) + ... +c_{j^n_i}(\prod_{s \in j^n_i} z_s - \prod_{s \in j^n_i} x_s) + \mathlarger{\mathlarger{\sum}}_{E' \in \chi_n(U) \setminus j^n_i } (\prod_{e \in E'} z_e - \prod_{e \in E'} x_e ) \\ 
+    & \leq - c_{f} + \mathlarger{\mathlarger{\sum}}_{E' \in \delta(U) \setminus \{f \} } |c_{E'}| + ... - c_{j^n_i} +  \mathlarger{\mathlarger{\sum}}_{E' \in  \chi_n(U) \setminus j^n_i } |c_{E'}|\\
+    & = \mathlarger{\mathlarger{\sum}}_{k \leq n} \sum_{E' \in \chi_k(U) \setminus j^k_i} |c_{E'}|  - c_{j^k_i},   
+\end{align*}
+where the inequality follows from the following observations: $c_f \leq 0$ and $c_{j^k_i} \leq 0$, $z_f=1$ and $\prod_{s \in j^k_i} z_s=1$, and $x_f=0$ and $\prod_{s \in j^k_i} x_s=0$, for all $k \leq n$.
+\\ Note that we could also define a similar persistency criterion with the mapping 
+\[ p(x^k)= \begin{cases}
+    p_{j^k_i}(p_{\chi_k(U)}(x^k)) & \text{ if } \prod_{s \in j^k_i} x_s \neq \beta_k \text{ for some } k \leq n \\
+    x^k & \text{otherwise} 
+\end{cases} \]
+The resulting persistency criterion would then be that $\prod_{s \in j^k_i} x_s = \beta_k$ for \textit{some} $k \leq n$. \\ \\ 
+\textit{Proof of (2):}
+We show that the mapping \[ p(x^k)= \begin{cases}
+    p_{\chi_k(U)}(x^k) & \text{ if  } \prod_{s \in j^k_i} x_s \neq \beta_k \quad \forall k \leq  n\\
+    x^k & \text{ otherwise } 
+\end{cases} \]
+is improving for the multi-cut problem. Clearly, the mapping is improving if $\prod_{s \in j^k_i} x_s = \beta_k$ for some $k \leq n$. Suppose that there exists some $i$ (these may be different for each $k$), such that $\prod_{s \in j^k_i} x_s \neq \beta_k$ for all $k \leq n$. Remind in this case $\beta_k =0$ is fixed for all $k \leq n$, so $\prod_{s \in j^k_i} x_s=1$ for all $k \leq n$. We have:  
+\begin{equation*}
+    \begin{split}
+    & \sum_{E' \in \mathcal{E}} c_{E'} \Big( \prod_{e \in E'} z_e - \prod_{e \in E'} x_e \Big) \\ 
+    & = \mathlarger{\mathlarger{\sum}}_{E' \in J_1} c_{E'} (\prod_{e \in E'} z_e - \prod_{e \in E'} x_e ) + ...  +    \mathlarger{\mathlarger{\sum}}_{E' \in J_n} c_{E'} (\prod_{e \in E'} z_e - \prod_{e \in E'} x_e ) \\
+    &= c_{f}(z_{f} - x_{f}) + \mathlarger{\mathlarger{\sum}}_{E' \in \delta(U) \setminus \{f \} } c_{E'} (z_{E'}-x_{E'}) + ... \\
+    &+ c_{j^n_i} ( \prod_{e \in j^n_i} z_{e} -\prod_{e \in j^n_i} x_{e})+ 
+    \mathlarger{\mathlarger{\sum}}_{E' \in \chi_n(U) \setminus j^n_i } c_{E'} (\prod_{e \in E'} z_e - \prod_{e \in E'} x_e ) \\ 
+    & \leq -c_{f}x_{f} + \mathlarger{\mathlarger{\sum}}_{E' \in \delta(U) \cap E^+ \setminus \{f \} } c_{E'} (z_{E'}-x_{E'}) + ... \\
+    & -c_{j^n_i}\prod_{e \in j^n_i} x_{e}+ 
+    \mathlarger{\mathlarger{\sum}}_{E' \in \chi_n(U) \cap E^+_n \setminus j^n_i } c_{E'} (\prod_{e \in E'} z_e - \prod_{e \in E'} x_e ) \\ 
+    & \leq - |c_{f}| + \mathlarger{\mathlarger{\sum}}_{E' \in \delta(U) \cap E^+ \setminus \{f \} } c_{E'} + ... - |c_{(j^n_i)}| +  \mathlarger{\mathlarger{\sum}}_{E' \in  \chi_n(U) \cap E^+_n \setminus j^n_i } c_{E'}\\
+    & = \mathlarger{\mathlarger{\sum}}_{k \leq n} \sum_{E' \in \chi_k(U)\cap E^+_k \setminus j^k_i} c_{E'}  - |c_{j^k_i}|,   
+    \end{split}
+\end{equation*}
+where the last inequality follows from the fact that for some $f$ and some $i$, it is $c_f > 0$ and $c_{j^k_i} > 0$ for all $k$, since $x_k \neq \beta_k$ and $\beta_k=0$ for $i \leq k$. Further, if $E' \neq j^k_i$, then 
+\[\prod_{e \in E'} z_e \in \Big\{0, \prod_{e \in E'} x_e\Big\}. \] 
+Since $\prod_{e \in E'} x_e \in \{ 0, 1 \}$ it follows that 
+\[ c_{E'}  \Big( \prod_{e \in E'} z_e - \prod_{e \in E'} x_e \Big) \in \{ -c_{E'}, 0\}. \] 
+\\ Note that we could also define a similar persistency criterion with the mapping 
+\[ p(x^k)= \begin{cases}
+    p_{\chi_k(U)}(x^k) & \text{ if  } \prod_{s \in j^k_i} x_s \neq \beta_k \text{ for some } k \leq  n\\
+    x^k & \text{ otherwise } 
+\end{cases} \]
+The resulting persistency criterion would then be that $\prod_{s \in j^k_i} x_s = \beta_k$ for some $k \leq n$. \\ \\ 
+\begin{lemma}
+Suppose that $\exists f \in E$ and $\exists \beta \in \{0,1\}$. Further, let $H=(V_H, E_H)$ be a connected subgraph of $G$ and let $e \in E_H$. Consider CUT(H), that is the set of possible labelings of the edges that have one node in the subgraph and one node in the graph (without the subgraph). Suppose that for each labeling $y \in $ CUT(H) with the property $y_f =1- \beta$, there exists a mapping $p^y: X \rightarrow X$ such that for all $x \in X$ with $x_{|E_H}=y$ (and thus $x_e=y$  $\forall e \in E_H$) we have:  
+\begin{enumerate}
+    \item $p^y(x)$ is an improving mapping.
+    \item $p^y(x)_f = \beta$, \\
+\end{enumerate}    
+Then $x^*_f = \beta$ in some optimal solution $x^*$. If additionally 
+\begin{enumerate}[resume]
+    \item $\exists \gamma \in \{0,1\}$, and $\exists j^k_{i} \in J_k$: \[ \prod_{h \leq k} p^y({x^*}^k)_{j^k_{i_h}}=\gamma \], 
+\end{enumerate}
+then also \[ \prod_{h \leq k} {x^k}^*_{j^k_{i_h}}=\gamma. \] In particular, if $\gamma=1$, then $x^*_{j^k_{i_h}}=1$ for all $h \leq k$. 
+\end{lemma}
+\textit{Proof:} Condition (i) implies that the mapping $p:X \rightarrow X$ defined by 
+\[ p(x)= \begin{cases}
+    p^y(x) & \text{ if } x_{|E_H} =y \\
+    x & \text{ otherwise } 
+\end{cases} \]
+is improving. 
+Next, use condition (ii). Let $x$ be an optimal solution to (P). Then $p(x)=x^*$ is also optimal and $p(x)_f= \beta$ or $p(x)_f=x_f$ for all $x$. However, in the assumption: $x_{|E_H} = y$ for $e \in E_H$. Thus, for $e \in E_H$: $p(x)=p^y(x)$ and hence $p(x)_e=\beta$. Lemma 3.1 implies that ${x_e}^*=\beta$.
+The last case (3.) follows simultaneously from Lemma 3.1. Next, we show an application of Lemma 3.2. 
+\begin{theorem}{(Triangle Criterion)}
+Let $\{uw,uv,vw\} \subset E$ be a triangle. Let $U \subset V$ be s.t. $uv, uw \in \delta(U)$, and $W \subset V$ be s.t. $uw,vw \in \delta(W)$. If 
+\begin{enumerate}
+\item \begin{equation*}
+    \begin{split}
+    & c_{uw}+c_{uv}+c_{uw,uv} + \sum_{E' \in \chi_1(U) \setminus \{uw,uv\} }|c_{E'}| + \sum_{E' \in \chi_2(U) \setminus (uw,uv)} |c_{E'}| \\ &+  \mathlarger{\mathlarger{\sum}}_{k \in [3,n]} \sum_{E' \in \chi_k(U)} |c_{E'}| \leq 0
+    \end{split}
+\end{equation*}
+\item \begin{equation*}
+    \begin{split}
+    & c_{uw}+c_{vw}+c_{uw,vw} + \sum_{E' \in \chi_1(W) \setminus \{uw,vw\} }|c_{E'}| + \sum_{E' \in \chi_2(W) \setminus (uw,vw)} |c_{E'}| \\ & + \mathlarger{\mathlarger{\sum}}_{k \in [3,n]} \sum_{E' \in \chi_k(W)} |c_{E'}| \leq 0 
+    \end{split}
+\end{equation*}
+\item 
+\begin{equation*}
+    \begin{split}
+    & c_{uw}+c_{uv}+c_{vw}+c_{uv,vw}+c_{uw,vw}+c_{uw,uv,vw} + \sum_{E' \in J_1 \setminus \{uw,uv,vw\} }  \\  
+    & + \sum_{E' \in J_2 \setminus (uw,uv),(uv,vw),(uw,vw)} |c_{E'}|+ \sum_{E' \in J_3 \setminus (uw,uv,vw)} |c_{E'}| \\ 
+    & + \mathlarger{\mathlarger{\sum}}_{k \in [4,n]} \sum_{E' \in J_k} |c_{E'}| \leq 0
+    \end{split}
+\end{equation*}
+\item \begin{equation*}
+    \begin{split}
+    & -c_{uw}-c_{uv}-c_{vw}-c_{uw,uv}-c_{uv,vw}-c_{uw,vw}-c_{uvw}\\ &  +
+    \sum_{E' \in \chi_1(U,W) \setminus \{uw,uv,vw\} } |c_{E'}| +  \sum_{E' \in \chi_2(U,W) \setminus (uw,uv), (uv,vw), (uw,vw) } |c_{E'}|  \\& +  \sum_{E' \in \chi_3(U,W) \setminus (uw, uv,vw)} |c_{E'}| + \mathlarger{\mathlarger{\sum}}_{k \in [4,n]}  \sum_{E' \in \chi_k(U,W)} |c_{E'}|
+    \end{split}
+\end{equation*}
+\end{enumerate}
+then $x^*_{uw}=0$ for some optimal solution of the multi-cut problem. 
+Note that in the last condition (4.), we could replace the sum \[ \sum_{E' \in \chi_1(U,W) \setminus A } |c_{E'}| \] by either \[ \sum_{E' \in \chi_k(U,W) \cap E^+ \setminus A} c_{E'}\] or \[ \sum_{E' \in \chi_k(U,W) \cap E^- \setminus A} -c_{E'}\] for all sums. \end{theorem}
+Proof: There are four cases to consider, and each of them gives us a criterion. 
+\begin{enumerate}
+    \item Case: $x_{uw}=0$, $x_{uv}=0$, $_{vw}=1$. That is, there are two clusters, one including $u$ and one including $v$ and $w$. We apply Lemma 3.2 and the mapping $p^y(x^k)=p^{\Delta}_{\chi_k(U)}(x^k)$. Note that then $z_{uv}=1$, $z_{uw}=1$ and $z_{vw}=0$ for $z=p(x^k)$. This leads to the inequality defined above.
+    \item Case: $x_{uw}=0$, $x_{uv}=1$, $_{vw}=0$. Again, there are two clusters, one including $w$ and one including $u$ and $v$. We apply Lemma 3.2 and the mapping $p^y(x^k)=p^{\Delta}_{\chi_k(W)}(x^k)$. Note that $z_{uw}=1$, $z_{uv}=0$, $z_{vw}=1$. Analogeously, the second case follows.
+    \item Case $x_{uw}=x_{uv}=x_{vw}=0$. That is, all edges are cut and we have a "proper" multi-cut (more than two clusters). We apply Lemma 3.2 and the mapping $p^y(x^k)=p_{\{u,v,w\}}(x^k)$. 
+    Note that then $z_{uw}=z_{uv}=z_{vw}=1$. Then the equation above follows straight away. 
+    \item Case: $x_{uw}=x_{uv}=x_{vw}=1$. 
+    Not sure about this case since we conclude that $x_{uw}=0$! 
+    Thus, there is only one cluster. Apply the mapping 
+    \[ p_{\delta(U)}(p_{\delta(W)}(x))_e= \begin{cases}
+    0 & e \in \delta(U)\cup \delta(W) \\
+    x_e & \text{ else } 
+    \end{cases} \] Then $z_{uw}=z_{uv}=z_{vw}=0$. For the other edges, note that if $e \in \delta(U) \cup \delta(W)$, then $z_e=0$. If $e \notin \delta(U)$ and $e \notin \delta(W)$, then $z_e=x_e$, and thus $c_e( \prod_{e \in E'} z_e - \prod_{e \in E'} x_e)=0.$ The equation above follows. 
+\end{enumerate}
+
+
+\section{Generalisation of Multicut Subgraph Theorem}
+We define the subgraph theorem on hyperedges. 
+
+\begin{theorem}
+Suppose that $\exists$ a connected subgraph $H=(V_H,\mathcal{E}_H)$ of the hypergraph $G=(V, \mathcal{E})$. Let $\mathcal{K} \in \mathcal{E}_H$, that is $\mathcal{K}=\{u_1, u_2, .., u_n\}$. 
+
+If \[ \min_{y \in MC(H)} \sum_{E' \in \mathcal{E}} c_{E'} \prod_{e \in E'} x_e =0,\] and for all $U \subset V_H$ with $u_i \in U$ and $u_j \notin U$, for $\mathcal{K}=\{u_1, ..., u_n\}$ it holds that 
+\[ \sum_{E' \in \delta(U, V_H \setminus U} c_{E'} \geq \sum_{E' \in \delta(V_H) \cap E^+}, \] then $x^*_{\mathcal{K}}=0$ in some optimal solution $x^*$ of $(P)$. 
+\end{theorem}
+\textit{Proof:} Use the mapping $p_{V_H} (p_{\delta(V_H)})$ to improve any solutions $y \in Y$ with $x_{\mathcal{F}} \neq 0$.  
+\begin{equation}
+    p_{V_H} (p_{\delta(V_H)})(x)_{\mathcal{F}}= \begin{cases}
+    1 & \mathcal{F} \in V_H \\
+    1 & F \in \bigcap_{A \in \Phi_U} \delta(A) \setminus \delta( \bigcap_{A \in \Phi(U)} A) \\
+    0 & \mathcal{F} \in \delta(V_H) \\
+    x_{\mathcal{F}} & \text{else} 
+    \end{cases}
+\end{equation}
+Use Lemma 3. Let $y \in X$ with $y_{\mathcal{K}}=1$. Suppose $x \in X$ with $x_{|\mathcal{E}_H}=y$. Then, $\exists$ a multicut $M$ of $H$: $y=1_M$. Every (multi-)cut of $H$ has nonnegative weight. $\therefore \exists$ some $U \in V_H$ with $u_i \in U$ and $u_j \notin U$, $i \neq j$, s.t. $\delta(U, V_H \setminus U) \subseteq M$ and \[ \sum_{E' \in \mathcal{E}_H} c_{E'} (1-\prod_{e \in E'} x_e) = \sum_{E' \in M} c_{E'} \geq \sum_{E' \in \delta(U, V_H \setminus U)} c_{E'}. \] Let $p^y(x)= p_{V_H} (p_{\delta(V_H)}) := z$. Then: 
+\begin{align}
+    \sum_{E' \in \mathcal{E}} c_{E'} (z_{E'} - x_{E'}) & =  \sum_{E' \in \mathcal{E}_H} c_{E'} (1-x_{E'}) - \sum_{E' \in \delta(V_H)} c_{E'} x_{E'} \\ & \leq \sum_{E' \in \mathcal{E}_H \cap \mathcal{E}^+_H} c_{E'} (1-x_{E'}) - \sum_{E' \in \mathcal{E}_H \cap \mathcal{E}^+_H } c_{E'} \\
+    & = \sum_{E' \in \mathcal{E}^+_H} -c_{E'} x_{E'} \leq 0,
+\end{align}
+
+where $\mathcal{E}^+_H= \{ \mathcal{G} \in \mathcal{E}_H: c_{\mathcal{G}} >0 \}$. 
+
+We also used that $x_{E'}=1$ if $E'$ is connected, and $x_{E'}=0$ meaning that $E'$ is cut. 
+
+Condition we require is: 
+\[ \sum_{E' \in \mathcal{E}^+_H} c_{E'} \leq \sum_{E' \in \delta(V_H)} c_{E'} x_{E'} \]
+Can we get a better condition by making assumptions on $U$? At least, with this assumption, we do not have to make any assumptions about the cut $\delta(U)$ being nonnegative etc.  
+

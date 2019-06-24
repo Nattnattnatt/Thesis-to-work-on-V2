@@ -1,0 +1,88 @@
+\section{For quadratic cost function}
+Let $G=(V,E,c)$ be a weighted graph, where $c=(c_1,c_2): E \times \binom{E}{2} \to \mathbb{R} \times \mathbb{R}$. 
+We consider the following combinatorial optimisation problem with quadratic cost function: 
+\begin{equation}
+\tag{P}
+ \min \Big(\sum_{e \in E} c_e x_e + \sum_{(e,f) \in {E \choose 2}} c_{e,f} x_e x_f \Big)  \quad \text{ s.t. } \quad x \in X,
+\end{equation}
+where $X \subseteq \{0,1\}^{|E|}$. Of course, $\sum_{e \in E} c_e x_e$ is simply the inner product $\langle c, x \rangle$ and we will use this notation sometimes to abbreviate things. 
+We distinguish non-negative and negative edges by writing $E=E^+ \cup E^-$, where $E^+= \{e \in E: c_e \geq 0$ and $E^-=\{e \in E: c_e <0\}$. Further, we write ${E_2}^+=\{ e \in E, f \in E: c_{e,f} \geq 0$ and ${E_2}^- = \{e \in E, f \in E: c_{e,f} < 0\}$. $c_{e,f}$ describes the cost that \textit{both} edges $e$ and $f$ are cut. Thus $E_2={E_2}^+\cup{E_2}^- $ is the set of all costs for cutting two edges of $E$. Note that $c_{e,f}$ is independent of $c_e$ and $c_f$. 
+For any two disjoint subsets of vertices $U,W \subseteq V$ let $\delta(U,W)= \{uw \in E| u \in U, w \in W\}$ denote the set of edges that have one node in $U$ and one node in $W$. We write $\delta(U):=\delta(U,V \setminus U)$. Further, we denote the set of edges either both being in $U$ or having one node in $U$ as $\chi(U)= \{(e \in U, f \in U), (e \in U, f \notin U), (e \notin U, f \in U) \}$.
+Next, we will introduce multicuts and max-cuts. A multicut is basically a set of all edges that are cut when defining a clustering of the nodes of $V$. A max-cut is a multicut with just two clusters. 
+\begin{definition}
+For any graph $G=(V,E)$, a subset $M \subseteq E$ of edges is called a multicut of $G$ iff, for every cycle $C \subseteq E$ of $G$, we have $|C \cap M| \neq 1$.
+\end{definition}
+In order for things to be very clear, we give a second definition. (We show below that these two definitions are indeed equal.)
+\begin{definition}{(Multicut)}
+For any graph $G=(V,E)$, and any $x \in \{0,1\}^E$, the set $x^{-1}$ of those edges that are labeled $1$ is a \textit{multicut} of $G$ if and only if (1) holds: 
+\begin{equation}
+    \forall C \in \text{cycles}(G): \forall e \in C: x_e \leq \sum_{e' \in C \setminus \{e \}} x_{e'} 
+\end{equation} Let $X$ denote the set of all $x \in \{0,1\}^E$ that satisfy (1).
+\end{definition}
+We are interested in solutions to (P) both over max-cuts and multicuts. 
+
+
+
+
+
+\section{For higher-order cost function}
+
+\section{For higher-order cost function with node labels}
+
+
+\section{Special cases of the persistency criteria}
+We investigate the edge and subgraph criterion mentioned in J-H Langes paper. The triangle criterion is defined for a triangle, which is a complete graph. 
+Further, the triangle criterion fixes all edges by a simple redefinement of the sets $U$ and $W$. For example, in order to fix edge $vw$: Let $U \subset V$ be s.t. $uv, vw \in \delta(U)$, and let $W \subset V$ be s.t. $uw, vw \in \delta(W)$. 
+\subsection{How do persistency criteria look like for complete graphs?}
+We find that the edge criterion does not really change for complete graphs, but the multicut subgraph criterion changes. 
+
+\begin{theorem}{(Edge criterion for complete graphs)}
+Let $f \in E$ be an edge. Suppose that $\exists$ some subset $U \subseteq V$ with $f \in \delta(U)$. If \[ c_f \geq \sum_{e \in \delta(U) \setminus \{f\} } |c_e|, \] then $x^*_f=0$ in some optimal solution $x^*$ of (P).
+\end{theorem}
+Note that we do not infer that $U \subseteq V$ is connected anymore, since any subset of a complete set is necessarily connected. 
+Other than that, the edge criterion does not change for complete graphs. 
+For the multicut subgraph criterion we find that for a complete graph, we can relax the conditions a bit:  
+\begin{theorem}{(Multicut Subgraph Theorem for complete graphs)}
+Suppose there exists a connected subgraph $H=(V_H, E_H)$ of $G$ (which is also complete), with $|V_H|=n$ and let $uv \in E_H$. The assumptions are: 
+\begin{enumerate}
+    \item \[ \min_{y \in MC(H)} \langle c, y \rangle =0, \] that is every cut has nonnegative weight.
+    \item Consider all subsets $U \subset V_H$ s.t. $u \in U$ and $v \notin U$. Let $j \in \{1, ...,  \floor*{\frac{n}{2}} \}$. If, for every $j$, either for $|U|=j$ or for $|U|=n-j$ it holds: % \[ \sum_{e \in \delta(U, V_H \setminus U)} c_e \geq \sum_{e \in \delta(V_H) \cap E^+} c_e,  \]
+\end{enumerate}
+then $x^*_{uv}=0$ in some optimal solution $x^*$. 
+\end{theorem}
+Note that we do not assume that $U$ are necessarily connected, since this lies in the assumption: All subsets of the complete graph are connected. The proof of this relaxation relies on the following lemma, and the notice that $\sum_{e \in \delta(V_H) \cap E^+} c_e$ does not depend on $U$ and thus is for all subsets $U \subset V$ the same. 
+\begin{lemma}
+Consider some complete graph $V_H$, with $|V_H|=n$. Let $j \in \{1, ..., \floor*{\frac{n}{2}}\}.$ Consider all subsets $U \subset V$. The following are equivalent:
+\begin{enumerate}
+    \item $\delta(U,V_H \setminus U)$ for $|U|=j$
+    \item $\delta(U,V_H \setminus U)$ for $|U|=n-j$
+\end{enumerate}
+\end{lemma}
+\textit{Proof:} $\delta(U,V_H \setminus U)$ contains all edges that have one node in $U$, and one node in $V \setminus U$. Remind $|V|=n$. How many ways are there for edges to have one node in $U$ and one node in $V \setminus U$? $\binom{|V|}{|U|}=\binom{n}{j}=\binom{n}{n-j}$. 
+
+What does the multicut subgraph theorem actually do? It
+compares the value of the inner cut with the value of the outer cut. The underlying idea is that if the value of the inner cut is greater or equal than the value of the outer cut, then we can fix all edges that lie in the inner cut. 
+Observe that the outer cut $\sum_{e \in \delta(V_H) \cap E^+}$ is the same for all edges $U$. Let us describe what the theorem is doing with the simplest complete graph $K_3$. Let $|V|=n$. The subgraph $V_H$ must be proper, and it must also contain at least 2 elements, thus $V_H$ has two elements. WLOG, $V_H=\{u,v\}$. Also, $U$ must be a proper subset of $V$. Then there are two options for $U$: $U=u$ or $U=v$. One can see quite well where the idea stems from already from the third order case. In order to apply the criterion, we need two things: \begin{enumerate}
+    \item $c_e y_e + c_f y_f +c_g y_g \geq 0$ for all $y \in MC(H)$.
+    \item For $U=u$: $c_e \geq \sum_{e \in \{f,g\} \cap E^+} c_e$ ($=c_f +c_g$ if $f,g \in E^+$)
+    \item For $U=v$: Same as 2. This suggests that we do not infer the criterion doubly. 
+\end{enumerate}
+   
+\subsection{For which graphs do persistency criteria fix all edges?}
+We investigate both the edge criterion and the multicut subgraph criterion. The triangle criterion is only for triangles, so of course the triangle criterion will fix all edges of the triangle.
+\begin{theorem}{(Edge Criterion)}
+Let $f \in E$ be an edge and suppose there exists some $U \subseteq V$ connected with $f \in \delta(U)$. WLOG, let $c_f >0$. If 
+\[ c_f \geq \sum_{e \in \delta(U) \setminus f} |c_e|, \] 
+then $x^*_f=0$ in some optimal solution $x^*$ of (P). 
+\end{theorem}
+If $c_f \leq 0$, then we just swap the inequality to \[ |c_f| \geq \sum_{e \in \delta(U) \setminus f} c_e, \] and infer that if this condition is satisfied then $x^*_f=1$ in some optimal solution $x^*$ of (P). 
+
+We investigate whether the edge criterion fixes all edges for a path, a tree, and a series-parallel graph.
+\begin{enumerate}
+    \item Path: The edge criterion fixes every edge except the edge with minimum cost. To see this, fix an edge $m=\{x,y\}$ with minimal cost ($c_m \leq c_j$ for all $j \in E$). Then, let $U$ consist of all nodes starting from $x$ (or $y$) up to the closest node of $f$. Then $\delta(U)=\{m, f\}$. Thus, \[ c_f \geq \sum_{e \in \delta(U) \setminus f} |c_e|=|c_m| \] is satisfied for every edge $f$, except for the edge with minimum cost $m$. (Equivalent if $c_f \leq 0$.)
+    
+    \item Tree: Also for a tree, the edge criterion fixes every edge except for the one with minimum cost and the logic is very similar. Let $m$ be the edge with the lowest cost, that is $c_m \leq c_j$ for all $j \in E$. Then, choose $U$ connected such that $\delta(U)$ contains only the edge that we want to fix with the criterion, and $m$. This way all edges except $m$ are fixed again.  
+    
+    \item Series-parallel graph: For sp graphs, the edge criterion can not fix every edge. The problem is that if there is some edge $m$ in a cycle of the graph, and $h$ is not neighboured to some $e$ that is not in the cycle, then every $\delta(U)$ that contains $h$ and $e$ contains at least one other edge. 
+\end{enumerate}
+Maybe generalise this for a hypergraph? 

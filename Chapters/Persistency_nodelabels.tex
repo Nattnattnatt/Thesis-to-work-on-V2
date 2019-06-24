@@ -1,0 +1,260 @@
+\section{Edge criterion}
+
+We take the set up as in the ICCV submission given to me. 
+We first introduce the problem statement, then define improving mappings and give some example of elementary mappings. Then we define persistency, present the edge criterion for this case and give some pseudo code to implement it. 
+
+The set $X$ is defined as in the ICCV submission given to me. What is new is the node labeling functions $y: V \times L \to \{0,1\}$ that indicate, for any node $v \in V$ and any label $l \in L$: 
+\begin{equation}
+    y_{vl}=\begin{cases}
+    1 & \text{node $v$ is assigned label $l$} \\
+    0 & \text{node $v$ is } \textit{not } \text{assigned label $l$}
+    \end{cases}
+\end{equation}
+We introduce the set $Y$ that ensures that each node is assigned precisely one label, so we constrain the functions to the set \[ Y= \Big\{ y \in \{0,1\}^{V \times L} \Big| \quad \forall v \in V: \sum_{l \in L} y_{vl}=1 \Big\} \]
+
+We consider the binary multi-linear program 
+\begin{equation}
+\tag{P}
+    \min_{(x,y) \in X \times Y } \sum_{U \in \mathcal{V}} \sum_{\lambda^U \in L^U} c_{\lambda^U} \prod_{\{u,v\} \in \binom{U}{2} \cap E} x_{uv} \prod_{w \in U} y_{w \lambda^U(w)}
+\end{equation}
+
+\subsection{Elementary mappings}
+Our goal is to derive persistency criteria for (P). We want to be able to say: If some hyperedge $W$ fulfills criteria A, B, C \textit{or} D (etc.), then we can apply the edge criterion. The idea is that for different problems, different criteria are easier to check than others. 
+In this section, it makes sense to introduce the function $f: X \times Y \to X \times Y$, for some hyperedge $W \in \mathcal{V}$ as:
+\[ f_W(x,y)= \prod_{\{u,v\} \in \binom{U}{2} \cap E} x_{uv} \prod_{w \in U} y_{w \lambda^W(w)} \] 
+Improving mappings play a key role in deriving persistency criteria.
+\begin{lemma}{((Strictly) Improving mapping)}
+We say that a mapping $P(x,y):=(p(x),q(y)): X \times Y \to X \times Y$ is \textit{improving}, if 
+\begin{equation}
+    \sum_{U \in \mathcal{V}} \sum_{\lambda^U \in L^U} c_{\lambda^U}  f_U(P(x,y)) \leq \sum_{U \in \mathcal{V}} \sum_{\lambda^U \in L^U} c_{\lambda^U}  f_U(x,y)
+\end{equation}
+We say that the mapping is \textit{strictly improving}, if the inequality is strict.
+\end{lemma}  During the proof of the edge criterion, we will refer to $f_U(P(x,y))$ as $z_U(x,y)$ and write the above equation as 
+\begin{equation}
+    \sum_{U \in \mathcal{V}} \sum_{\lambda^U \in L^U} c_{\lambda^U}  \Big[ z_U(x,y)) -  f_U(x,y) \Big] \leq 0
+\end{equation}
+The idea of the proof of the edge criterion is the following: We take some hyperedge $W$ out of the sum and show that $c_{\lambda^W}  \Big[ z_W(x,y)) - f_W(x,y) \Big] \leq - |c_{\lambda^W}|$. Generally, we fix the value of $f_W(x,y)$. This motivates why we are interested in mappings of the form  
+\begin{enumerate}
+    \item case: \begin{equation}
+        z(x,y)_W=  \begin{cases}
+        0 & \text{for some hyperedge } W \\
+        z(x,y)_W & \text{else}
+        \end{cases} 
+    \end{equation}
+    \textit{or}
+    \item case: \begin{equation}
+        z(x,y)_W=  \begin{cases}
+        1 & \text{for some hyperedge } W \\
+        z(x,y)_W & \text{else}
+        \end{cases}
+    \end{equation}
+\end{enumerate} Remind that $z(x,y)_w= \prod_{\{u,v\} \in \binom{W}{2} \cap E} p(x)_{uv} \cdot \prod_{w \in W} q(y)_{w \lambda^W(w)}$. For the first case, we want either $p(x)_{uv}=0$ for some $\{u,v\} \in \binom{W}{2} \cap E$ or $q(y)_{w \lambda^W(w)}=0$ for some $w\in W$ or both. Let us consider the different options to obtain this: \begin{enumerate}
+\item When is it that $p(x)_{uv}=0$ for some $\{u,v\} \in \binom{W}{2} \cap E$? 
+\begin{enumerate}
+    \item For any set of nodes $U \subseteq V$, let $\delta(U)=\{uv \in E: u \in U, v \in V \setminus U \}$. Let $uv \in \delta(U)$. Then consider the elementary cut mapping $p_{\delta(U)}: X \rightarrow X$, defined as \begin{equation*}
+    p_{\delta(U)}(x) = 
+    \begin{cases}
+    0 & uv \in \delta(U)\\
+    x_{uv} & \text{else}
+    \end{cases}
+    \end{equation*}
+    \item Let  $uv \in \delta(U)$ and $x_{uv}=1$ for all $uv \in W$. Then consider the symmetric difference mapping \[ p^{\Delta}_{\delta(U)} = \begin{cases}
+    1-x_e & e \in \delta(U) \\
+    x_e & \text{else} 
+    \end{cases} \]
+    \item More? 
+\end{enumerate}
+\item When is $q(y)_{w \lambda^W(w)}=0$ for some $w\in W$? Again, consider different ways:
+\begin{enumerate}
+\item The probably easiest mapping: If node $v \in W$, then do not assign it label $l$.: \begin{equation}
+        q(y)_{vl}= \begin{cases}
+        0 & \text{if } v \in W \\
+        y_{vl} & \text{else} 
+        \end{cases}
+    \end{equation}
+    \item The mapping that does NOT assign the label $\lambda^w(w)$ to node $w$ (for any node $w$, not only the nodes in $w$): 
+    \begin{equation}
+        q(y)_{vl}= \begin{cases}
+        0 & \text{if } l=\lambda^v(v) \\
+        y_{vl} & \text{else} 
+        \end{cases}
+    \end{equation}
+    \item Combine (a) and (b):
+    \begin{equation}
+        q(y)_{vl}= \begin{cases}
+        0 & \text{if } l=\lambda^v(v) \text{ and } v \in W \\
+        y_{vl} & \text{else} 
+        \end{cases}
+    \end{equation}
+     \item Extend (b): Let also the neighbors of some $v$ not be assigned a label.
+    \begin{equation}
+        q(y)_{vl}= \begin{cases}
+        0 & \text{if }  v \in W \\
+        0 & \text{if } \exists \text{ some } u \in V: uv \in E  \\
+        y_{vl} & \text{else} 
+        \end{cases}
+    \end{equation}
+\end{enumerate}
+\end{enumerate} 
+Next, consider the case that we want $z_w(x,y)=1$ for some $W \in \mathcal{V}$. So we need $p(x)_{uv}=0$ for all $\{u,v\} \in \binom{W}{2} \cap E$ \textit{and} $q(y)_{w \lambda^W(w)}=0$ for all $w\in W$. 
+\begin{enumerate}
+    \item When is it that $p(x)_{uv}=1$ for all $\{u,v\} \in \binom{W}{2} \cap E$? 
+    \begin{enumerate}
+        \item Introduce $U$ and the elementary join mapping $p_U(x)$ that joins every two nodes in $\binom{W}{2} \cap E$:
+        \begin{equation}
+            p(x)_{uv} = \begin{cases}
+            1 & uv \in \binom{W}{2} \cap E \\
+            x_{uv} & \text{ else} 
+            \end{cases}
+        \end{equation}
+        \item Extend (a) to neighbors:
+        \begin{equation}
+            p(x)_{e} = \begin{cases}
+            1 & e \in \binom{W}{2} \cap E \\
+            1 & \exists f \in E: x_{e,f}=1  \\
+            x_{e} & \text{ else} 
+            \end{cases}
+        \end{equation}
+        \item more mappings ? 
+    \end{enumerate}
+    \item When is it that $q(y)_{w \lambda^W(w)}=1$ for all $w\in W$? 
+    \begin{enumerate}
+    \item Always assign label $l$ to node in $W$:
+            \begin{equation} q(y)_{vl}= \begin{cases}
+            1 & \text{ if } v \in W \\
+            y_{vl} & \text{else}
+            \end{cases}
+            \end{equation}
+     \item If the label is the mapping $\lambda^U(v)$ for some node set/hyperedge, then the mapping gives 1. 
+            \begin{equation} q(y)_{vl}= \begin{cases}
+            1 & \text{ if } l=\lambda^W(v) \\
+            y_{vl} & \text{else}
+            \end{cases}
+            \end{equation}
+    
+        \item Let 
+            \begin{equation} q(y)_{vl}= \begin{cases}
+            1 & \text{ if } v \in W \text{ and } l=\lambda^W(v) \\
+            y_{vl} & \text{else}
+            \end{cases}
+            \end{equation}
+        
+        \item Let $A$ be some set of nodes. In the criteria assumptions, infer that $W \subseteq A$. 
+        \begin{equation} q(y)_{vl}= \begin{cases}
+            1 & \text{ if } v \in A \\
+            y_{vl} & \text{else}
+            \end{cases}
+            \end{equation}
+        On this one can build on. Which node sets $A$ make sense to consider? It should be easy to check whether some node is in $A$ or not. Which node sets necessarily contain $W$? 
+    \end{enumerate}
+\end{enumerate}
+
+\subsection{Persistency}
+We mentioned before that improving mappings play a key role in defining persistency. This stems from the following lemma: 
+\begin{lemma}{(Persistency)}
+Let $P(x,y): X \times Y \to X \times Y$ be an improving mapping. If $\exists \beta \in \{0,1\}$, and $\exists$ some hyperedge $U \in \mathcal{V}$ s.t. 
+\begin{equation}
+    \prod_{\{u,v\} \in \binom{U}{2} \cap E} p(x)_{uv} \prod_{w \in U} p(y)_{w \lambda^U(w)}= \beta \quad \forall (x,y) \in X \times Y
+\end{equation}
+Then: 
+\begin{equation}
+    \prod_{\{u,v\} \in \binom{U}{2} \cap E} x^*_{uv} \prod_{w \in U} y^*_{w \lambda^U(w)}= \beta \quad \forall (x,y) \in X \times Y
+\end{equation} In particular, if $\beta=1$, then $x^*_{uv}=1$ for all $uv \in \binom{U}{2} \cap E$, and $y^*_{w \lambda^U(w)}=1$ for all $w \in U$.  \end{lemma} \textit{Proof:} Let $(x,y)$ be an optimal solution of $(P)$. Then, clearly, also $P(x,y)=(p(x),q(y))=(x^*,y^*)$ is optimal. Then (3) follows straightaway from (2).
+\\ \\ 
+
+\begin{theorem}{(Edge criterion)}
+Let $G=(V, E)$ be a graph and let $\mathcal{V} \subseteq 2^V$ be the set of corresponding hyperedges (or set of nodes). Let $U \subseteq V$ be a connected subset and let \[ \beta_W = \begin{cases}
+    0 & c_{\lambda^W}>0 \\
+    1& c_{\lambda^W} \leq 0
+\end{cases} \] 
+\begin{enumerate}
+    \item Let $\beta=0$. Suppose that $\mathcal{V}$ is s.t. there exists some $W \in \mathcal{V}$ s.t. at least one of the following hold: 
+    \begin{enumerate}
+        \item $uv \in \binom{W}{2} \cap E$ 
+        \item $e \in \binom{W}{2} \cap E$ or $\exists f \in E$: $x_{e,f}=1$
+        \item $v \in W$
+        \item $l=\lambda^W(v)$ for all labels $l$
+        \item There exists some node set $A$: $W \subseteq A$. Let $v \in A$ for all nodes $v \in W$ 
+    \end{enumerate}
+    
+    \item Let $\beta=1$. Suppose that $\mathcal{V}$ is s.t. there exists some $W \in \mathcal{V}$ s.t. at least one of the following holds: 
+    \begin{enumerate}
+        \item For some $\{u,v \} \in \binom{W}{2} \cap E$: $uv \in \delta(U)$
+        \item $v \in W$
+        \item $v \in W$ or $\exists$ some $u \in V: uv \in E$
+        \item $l=\lambda^v(v)$ for some $v \in W$ 
+    \end{enumerate}
+    \end{enumerate}
+    If \begin{equation}
+    \sum_{W \in \mathcal{V}} \sum_{\lambda^W \in L^W} |c_{\lambda^W}| >
+    \sum_{U \in \mathcal{V}\setminus W}  \sum_{\lambda^U \in L^U} |c_{\lambda^U}|, \end{equation} then \begin{equation}
+    f_W(x^*,y^*)=\prod_{\{u,v\} \in \binom{W}{2} \cap E} x^*_{uv} \prod_{w \in W} y^*_{w \lambda^W(w)}= \beta \end{equation} in every optimal solution $(x^*,y^*)$ of (P).
+    
+    In particular, if $\beta=1$, then $x^*_{uv}=1$ for every $\{u,v\} \in \binom{W}{2} \cap E$ and $y^*_{w \lambda^W(w)}=1$ for every $w \in W$. 
+ \end{theorem} 
+\textit{Proof:} The proof relies on Lemma 1.2 by applying some of the elementary mappings to improve any solution $(x,y)$ with $f_W(x,y) \neq \beta$. Note that these are not the only mappings with which we can derive persistency. In the section elementary mappings it should be made clear that there are also other mappings that could be considered, that require different conditions to check, in order for persistency to hold. 
+\begin{enumerate}
+    \item Fix $\beta=0$, for all $c_{\lambda^W} >0$. In this case, $f_W(x,y)=1$ for all $c_{\lambda^W} >0$.
+    Let \begin{equation}
+        f_W(P(x,y))= \begin{cases}
+        f_W(p_{\delta(U)}(x),y) & f_W(x,y) \neq \beta \\
+        f_W(x,y) & \text{else} 
+        \end{cases}
+    \end{equation}
+    Note that we could have also picked the mapping .... to show the same thing! 
+    We show that $P$ is improving. Trivially, in the case $f_W(x,y) = \beta$ the map is improving. Thus, assume that $f_W(x,y) \neq \beta$. 
+    
+    Note that \[ f_W(p_{\delta(U)}(x),y) = \begin{cases}
+    0 & uv \in \delta(U) \text{ for some } (u,v) \in \binom{W}{2} \cap E \\
+    f_W(x,y) & \text{else} 
+    \end{cases} \]
+    Then: 
+    \begin{align*}
+        & \sum_{U \in \mathcal{V}} \sum_{\lambda^U \in L^U} c_{\lambda^U} (z_U(x,y)- f_U(x,y)) = \\
+       &  \sum_{U \in \mathcal{V} \setminus W} \sum_{\lambda^U \in L^U} c_{\lambda^U} (z_U(x,y)- f_U(x,y))  +  \sum_{W \in \mathcal{V}} \sum_{\lambda^W \in L^W} c_{\lambda^W} (z_W(x,y)- f_W(x,y))  \\
+       & \leq \sum_{U \in \mathcal{V} \setminus W} \sum_{\lambda^U \in L^U} |c_{\lambda^U}| +  \sum_{W \in \mathcal{V}} \sum_{\lambda^W \in L^W} c_{\lambda^W} (z_W(x,y)- f_W(x,y)) \\
+       & \leq \sum_{U \in \mathcal{V} \setminus W} \sum_{\lambda^U \in L^U} |c_{\lambda^U}| -\sum_{W \in \mathcal{V}} \sum_{\lambda^W \in L^W} |c_{\lambda^W}| \\
+    \end{align*}
+    The first inequality follows since $z_U(x,y) \in \{0,1\}$ and $f_U(x,y) \in \{0,1\}$ for all $U \in \mathcal{V}$. 
+    The second inequality follows since $f_W(x,y)=1$, $c_{\lambda^W}>0$, and $z_W(x,y)=0$ under the proposed mapping. 
+    Then, this mapping is negative (or non-negative), when (21) is less than or equal to 0, which is the proposed condition. 
+    
+    Note that there are many other improving mappings that would given us the same criterion to check, but that ask for different conditions. The different ways to obtain $z_W(x,y)=1$ for some $W \in \mathcal{V}$ are the following, described in the section on elementary mappings: 
+    \begin{enumerate}
+        \item $uv \in \binom{W}{2} \cap E$. Apply (10)
+        \item $e \in \binom{W}{2} \cap E$ or $\exists f \in E$: $x_{e,f}=1$. Apply (11)
+        \item $v \in W$. Apply (12)
+        \item $l=\lambda^W(v)$ for all labels $l$. Apply (13)
+        \item There exists some node set $A$: $W \subseteq A$. Let $v \in A$. Apply (15). 
+    \end{enumerate}
+    
+  
+    \item Fix $\beta=1$ for $c_{\lambda^W}\leq 0$. The case follows analogously as in case 1, but the improving mapping is chosen differently. 
+    Note that $f_W(x,y)=0$ for $c_{\lambda^W} \leq 0$. 
+    We have: 
+    \begin{align*}
+        & \sum_{U \in \mathcal{V}} \sum_{\lambda^U \in L^U} c_{\lambda^U} (z_U(x,y)- f_U(x,y)) = \\
+       &  \sum_{U \in \mathcal{V} \setminus W} \sum_{\lambda^U \in L^U} c_{\lambda^U} (z_U(x,y)- f_U(x,y))  +  \sum_{W \in \mathcal{V}} \sum_{\lambda^W \in L^W} c_{\lambda^W} (z_W(x,y)- f_W(x,y))  \\
+       & \leq \sum_{U \in \mathcal{V} \setminus W} \sum_{\lambda^U \in L^U} |c_{\lambda^U}| +  \sum_{W \in \mathcal{V}} \sum_{\lambda^W \in L^W} c_{\lambda^W} (z_W(x,y)- f_W(x,y)) \\
+       & \leq \sum_{U \in \mathcal{V} \setminus W} \sum_{\lambda^U \in L^U} |c_{\lambda^U}| -\sum_{W \in \mathcal{V}} \sum_{\lambda^W \in L^W} |c_{\lambda^W}| \\
+    \end{align*}
+    The first inequality follows since $z_U(x,y) \in \{0,1\}$ and $f_U(x,y) \in \{0,1\}$ for all $U \in \mathcal{V}$. 
+    The second inequality follows since $f_W(x,y)=1$, $c_{\lambda^W}>0$, and $z_W(x,y)=0$ under some proposed mapping. 
+    There are different ways to obtain $z_W(x,y)=0$ for some $W$. The different ways (by way not all of them) are in detail described in the section on elementary mappings. We go through them in detail. 
+    \begin{enumerate}
+        \item Firstly, we look at the conditions that we can infer to have $p(x)_{uv}=0$ for some $\{u,v \} \in \binom{W}{2} \cap E$. 
+        \begin{enumerate}
+            \item For some $\{u,v \} \in \binom{W}{2} \cap E$: $uv \in \delta(U)$. We are in case 1 (a) of the elementary mappings. Apply the proposed mapping.  
+            \item i. and $x_{uv}=1$ for all $\{u,v \} \in \binom{W}{2} \cap E$. We are in case 1(b) of the elementary mappings, apply $p^{\Delta}_{\delta(U)}$. There is no reason why we would use this mapping instead of case (a), since it is just more to ask for than the previous case. 
+        \end{enumerate}
+        \item Conditions that we can infer to have $q(y)_{w\lambda^W(w)}=0$ for some $w \in W$. 
+        \begin{enumerate}
+            \item $v \in W$: apply (6). 
+            \item $v \in W$ and $\exists$ some $u \in V: uv \in E$: apply (9).
+            \item $l=\lambda^v(v)$ for some $v \in W$: apply (7). 
+            \item Combine case i. and iii. above and apply (8). Again, this is just more to ask for, so it does not seem very reasonable to assume. 
+        \end{enumerate}
+    \end{enumerate}
+\end{enumerate}
+
+
